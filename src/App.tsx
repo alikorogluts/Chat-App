@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box } from "@mui/material";
-import { Routes, Route, Navigate } from "react-router-dom"; // ❗️Burada sadece Routes ve Navigate kalıyor
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./View/AcountScreens/Login";
 import { Register } from './View/AcountScreens/Register';
