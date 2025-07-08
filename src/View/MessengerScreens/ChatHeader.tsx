@@ -183,7 +183,7 @@ export const ChatHeader = ({
                     }}
                 >
                     <MenuItem>
-                        <Typography variant="body2" mr={2} fontWeight={500}>
+                        <Typography variant="body2" mr={2} fontWeight={500} color="black" >
                             Arka Plan Göster
                         </Typography>
                         <Switch

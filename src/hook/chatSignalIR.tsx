@@ -13,7 +13,7 @@ export const useSignalR = (
         if (!userId) return;
 
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl(`https://chat-app1.runasp.net/chatHub?userId=${userId}`)
+            .withUrl(`https://localhost:7223/chatHub?userId=${userId}`)
             .withAutomaticReconnect()
             .build();
 
