@@ -109,18 +109,17 @@ export const ChatPanel = ({
 
     return (
         <Box
+            flex={1}
             display="flex"
             flexDirection="column"
-            minHeight="100dvh"
             height="100%"
-            maxHeight="100dvh"
             sx={{
                 bgcolor: 'background.default',
                 color: 'text.primary',
             }}
         >
-            {/* Header */}
-            <Box flexShrink={0}>
+            {/* ChatHeader + Switch */}
+            <Box display="flex" alignItems="center">
                 <ChatHeader
                     user={user}
                     onBack={onBack}
@@ -130,15 +129,18 @@ export const ChatPanel = ({
                 />
             </Box>
 
-            {/* Message List */}
+            {/* Message Area */}
             <Box
-                flexGrow={1}
+                flex={1}
+                p={2}
+                display="flex"
+                flexDirection="column"
+                overflow="auto"
                 sx={{
-                    p: 2,
-                    overflow: 'auto',
                     ...(backgroundImage && {
                         backgroundImage: `url(${backgroundImage})`,
                         backgroundSize: 'cover',
+                        backgroundAttachment: 'fixed',
                         backgroundPosition: 'center',
                     }),
                 }}
@@ -210,7 +212,12 @@ export const ChatPanel = ({
                                         transition: 'opacity 0.2s',
                                     }}
                                 >
-                                    <Typography variant="caption" sx={{ fontSize: "0.65rem" }}>
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                            fontSize: "0.65rem",
+                                        }}
+                                    >
                                         {formatTime(msg.timestamp)}
                                     </Typography>
                                     {isMine && (
@@ -233,11 +240,10 @@ export const ChatPanel = ({
                 <div ref={messageEndRef}></div>
             </Box>
 
-            {/* Input */}
+            {/* Message Input Area */}
             <Box
                 display="flex"
                 p={1.5}
-                flexShrink={0}
                 sx={{
                     bgcolor: 'background.paper',
                     boxShadow: '0 -2px 10px rgba(0, 0, 0, 0.05)',
@@ -261,11 +267,15 @@ export const ChatPanel = ({
                         "& .MuiOutlinedInput-root": {
                             borderRadius: "24px",
                             padding: "8px 16px",
-                            "& fieldset": { border: "none" },
+                            "& fieldset": {
+                                border: "none",
+                            },
                         },
                     }}
                     InputProps={{
-                        sx: { fontSize: "0.95rem" },
+                        sx: {
+                            fontSize: "0.95rem",
+                        },
                     }}
                 />
                 <IconButton
@@ -279,7 +289,9 @@ export const ChatPanel = ({
                         bgcolor: 'primary.main',
                         color: 'primary.contrastText',
                         transition: "all 0.2s",
-                        "&:hover": { bgcolor: 'primary.dark' },
+                        "&:hover": {
+                            bgcolor: 'primary.dark',
+                        },
                         "&:disabled": {
                             bgcolor: 'action.disabledBackground',
                             color: 'action.disabled',

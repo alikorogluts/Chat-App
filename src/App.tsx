@@ -36,9 +36,9 @@ export default function App() {
           path="/register"
           element={
             user ? (
-              <Navigate to="/messenger" />
+              <Navigate to="/login" />
             ) : (
-              <Register onRegisterSuccess={setUser} />
+              <Register />
             )
           }
         />

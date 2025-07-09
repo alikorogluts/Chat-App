@@ -111,9 +111,9 @@ export const UserList = ({
                     textAlign="center"
                 >
                     <Box
-                        component="img"
-                        src="/assets/search-empty.svg"
-                        alt="No chats"
+                        component="video"
+                        src="Notfound.mp4"
+
                         sx={{ width: 120, height: 120, mb: 2, filter: isDarkMode ? "invert(0.8)" : "none" }}
                     />
                     <Typography variant="h6" sx={{ color: textColor, mb: 1 }}>
@@ -153,7 +153,7 @@ export const UserList = ({
                                 transition: "background-color 0.2s ease",
                             }}
                         >
-                            <ListItemAvatar>
+                            {u.senderUsername?.[0] ? (<ListItemAvatar>
                                 <Badge
                                     overlap="circular"
                                     anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -167,7 +167,8 @@ export const UserList = ({
                                         {u.senderUsername[0]}
                                     </Avatar>
                                 </Badge>
-                            </ListItemAvatar>
+                            </ListItemAvatar>) : null}
+
 
                             <Box sx={{ flex: 1, minWidth: 0, mr: 1 }}>
                                 <Box display="flex" justifyContent="space-between" alignItems="center">

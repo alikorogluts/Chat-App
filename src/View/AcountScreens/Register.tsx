@@ -3,14 +3,14 @@ import {
     Box, TextField, Button, Typography, Paper,
     Alert
 } from "@mui/material";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { registerApi } from "../../services/registerApi";
 
-interface Props {
-    onRegisterSuccess: (user: { id: number; username: string }) => void;
-}
 
-export function Register({ onRegisterSuccess }: Props) {
+
+
+export function Register() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [passwordConfirm, setPasswordConfirm] = useState("");
@@ -39,11 +39,19 @@ export function Register({ onRegisterSuccess }: Props) {
             if (result?.message === "Kayıt işlemi başarılı" && result.userId && result.userName) {
                 setSuccessMessage("Kayıt başarılı! Giriş yapabilirsiniz.");
                 // userId string, number'a çeviriyoruz
-                onRegisterSuccess({ id: Number(result.userId), username: result.userName });
+                setTimeout(() => {
+                    navigate("/login");
+                }, 2000);
             } else {
                 throw new Error("Kayıt başarısız.");
             }
         } catch (err) {
+            if (axios.isAxiosError(err)) {
+                if (err.response?.status === 409) {
+                    setErrorMessage("Kullanıcı adı zaten mevcut.");
+                    return;
+                }
+            }
             setErrorMessage("Kayıt sırasında hata oluştu.");
         }
     };
