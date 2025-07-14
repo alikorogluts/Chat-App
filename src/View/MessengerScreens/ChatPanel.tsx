@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect, type KeyboardEvent, type ChangeEvent } from "react";
 import {
     Box,
+    Dialog,
+    DialogContent,
     IconButton,
     TextField,
     Typography,
@@ -15,6 +17,7 @@ import { ChatHeader } from "./ChatHeader";
 import type { Message, User } from "../../Models/types";
 import getBackgrounds from "../../services/getBackgrounds";
 import { useNavigate } from "react-router-dom";
+import { apiConfig } from "../../connection";
 
 interface ChatPanelProps {
     user: User;
@@ -35,6 +38,8 @@ export const ChatPanel = ({
     const [input, setInput] = useState("");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [imgDialogOpen, setImgDialogOpen] = useState(false);
+    const conn = apiConfig.connectionString;
 
     const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
     const ALLOWED_TYPES = ["image/jpeg", "image/png", "application/pdf", "image/gif"]; // Genişletilebilir
@@ -252,22 +257,84 @@ export const ChatPanel = ({
                                     </Typography>
                                 )}
 
-                                {/* Dosya varsa göster */}
-                                {msg.fileUrl && (
+
+                                {msg.fileUrl && msg.fileUrl.trim() !== "" && (
                                     <Box mt={1}>
                                         {msg.fileUrl.endsWith(".pdf") ? (
-                                            <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer">
+                                            <a
+                                                href={msg.fileUrl.startsWith("http") ? msg.fileUrl : conn + msg.fileUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{ textDecoration: "none", fontWeight: 500 }}
+                                            >
                                                 📎 {msg.fileName || msg.fileUrl.split("/").pop()} (PDF)
                                             </a>
                                         ) : (
-                                            <img
-                                                src={msg.fileUrl}
-                                                alt={msg.fileName || msg.fileUrl.split("/").pop()}
-                                                style={{ maxWidth: 180, borderRadius: 8, marginTop: 4 }}
-                                            />
+                                            <>
+                                                <img
+                                                    src={msg.fileUrl.startsWith("http") ? msg.fileUrl : conn + msg.fileUrl}
+                                                    alt={msg.fileName || msg.fileUrl.split("/").pop()}
+                                                    style={{
+                                                        maxWidth: 180,
+                                                        borderRadius: 8,
+                                                        marginTop: 4,
+                                                        cursor: "pointer",
+                                                        boxShadow: "0px 2px 6px rgba(0,0,0,0.2)",
+                                                    }}
+                                                    onClick={() => setImgDialogOpen(true)}
+                                                />
+
+                                                <Dialog
+                                                    open={imgDialogOpen}
+                                                    onClose={() => setImgDialogOpen(false)}
+                                                    maxWidth="md"
+                                                    fullWidth
+                                                    PaperProps={{
+                                                        sx: {
+                                                            backgroundColor: "#000",
+                                                            boxShadow: "none",
+                                                        },
+                                                    }}
+                                                >
+                                                    <DialogContent
+                                                        sx={{
+                                                            position: "relative",
+                                                            display: "flex",
+                                                            justifyContent: "center",
+                                                            alignItems: "center",
+                                                            p: 0,
+                                                        }}
+                                                    >
+                                                        <IconButton
+                                                            onClick={() => setImgDialogOpen(false)}
+                                                            sx={{
+                                                                position: "absolute",
+                                                                top: 8,
+                                                                right: 8,
+                                                                color: "#fff",
+                                                                backgroundColor: "rgba(0,0,0,0.4)",
+                                                                "&:hover": { backgroundColor: "rgba(0,0,0,0.6)" },
+                                                            }}
+                                                        >
+                                                            <CloseIcon />
+                                                        </IconButton>
+                                                        <img
+                                                            src={msg.fileUrl.startsWith("http") ? msg.fileUrl : conn + msg.fileUrl}
+                                                            alt="Gönderilen Görsel"
+                                                            style={{
+                                                                maxWidth: "100%",
+                                                                maxHeight: "80vh",
+                                                                borderRadius: 12,
+                                                            }}
+                                                        />
+                                                    </DialogContent>
+                                                </Dialog>
+                                            </>
                                         )}
                                     </Box>
                                 )}
+
+
 
                                 {/* Saat ve okundu durumu */}
                                 <Box display="flex" alignItems="center" gap={0.5} mt={0.5} sx={{ alignSelf: "flex-end", opacity: 0.8 }}>

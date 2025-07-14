@@ -35,17 +35,17 @@ export const useSignalR = (
             .build();
 
         // Kullanıcının online durumu değiştiğinde Inbox listesini güncelle
-        connection.on("UserStatusChanged", (changedUserId: any, isOnline: boolean) => {
-            const idAsNumber = Number(changedUserId);
-            setInboxList(prev =>
-                prev.map(item =>
-                    item.senderId === idAsNumber
-                        ? { ...item, senderOnline: isOnline }
-                        : item
-                )
-            );
-            console.log("Durum değişti:", idAsNumber, isOnline);
-        });
+        /*  connection.on("UserStatusChanged", (changedUserId: any, isOnline: boolean) => {
+              const idAsNumber = Number(changedUserId);
+              setInboxList(prev =>
+                  prev.map(item =>
+                      item.senderId === idAsNumber
+                          ? { ...item, senderOnline: isOnline }
+                          : item
+                  )
+              );
+              console.log("Durum değişti:", idAsNumber, isOnline);
+          });*/
 
 
 
