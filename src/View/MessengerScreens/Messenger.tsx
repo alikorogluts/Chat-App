@@ -24,7 +24,7 @@ import { SearchUserModal } from "./SearchUserModal";
 import { type User, type Message } from "../../Models/types";
 import { getMessages } from "../../services/getMessagesApi";
 import { sendMessageApi } from "../../services/sendMessageApi";
-import { useSignalR } from "../../hook/chatSignalIR";
+import { useSignalR } from "../../signalR/chatSignalIR";
 import { fetchInbox } from "../../services/inBoxApi";
 
 import { useNavigate } from "react-router-dom";
@@ -93,6 +93,7 @@ const getDesignTokens = (mode: PaletteMode) => ({
 });
 
 export function Messenger({ onLogout }: MessengerProps) {
+
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [darkMode, setDarkMode] = useState<PaletteMode>("light");
     const systemPrefersDark = useMediaQuery("(prefers-color-scheme: dark)");
@@ -103,6 +104,8 @@ export function Messenger({ onLogout }: MessengerProps) {
 
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [inboxItems, setInboxItems] = useState<InboxItem[]>([]);
+    const navigate = useNavigate();
+
 
 
 
@@ -110,11 +113,77 @@ export function Messenger({ onLogout }: MessengerProps) {
     const savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
     const currentUser = savedUser ? JSON.parse(savedUser) : null;
     const currentUserId: number | undefined = currentUser?.id;
+    useSignalR(currentUserId?.toString() || "", (message) => {
+        const fixedMessage: Message = {
+            id: message.id, // ID alanı doğrudan eşleşti
+            senderId: message.senderId,
+            receiverId: message.receiverId,
+            text: message.text,
+            fileUrl: message.fileUrl,
 
-    const { messages, fetchMessages } = getMessages();
+            fileName: message.fileUrl?.split("/").pop() || "", // daha önce message.text olabilir diye kontrol vardı, artık sabit
+            timestamp: message.timestamp ?? new Date().toISOString(),
+            isRead: message.isRead ?? false,
+        };
+
+
+        // Mesaj açık konuşma penceresine aitse listeye ekle
+        if (
+            selectedUser &&
+            (fixedMessage.senderId === selectedUser.id ||
+                fixedMessage.receiverId === selectedUser.id)
+        ) {
+            setLocalMessages((prev) => [...prev, fixedMessage]);
+        }
+
+        const contactId =
+            fixedMessage.senderId === currentUserId
+                ? fixedMessage.receiverId
+                : fixedMessage.senderId;
+
+
+        setInboxItems((prevInbox) => {
+            const updated = [...prevInbox];
+            const index = updated.findIndex((item) => item.senderId === contactId);
+
+            if (index !== -1) {
+                updated[index] = {
+                    ...updated[index],
+                    lastMessage: fixedMessage.text,
+                    sendTime: fixedMessage.timestamp,
+                    isRead: false,
+                    unreadCount:
+                        fixedMessage.senderId === currentUserId ? 0 : updated[index].unreadCount + 1,
+                };
+            } else {
+                updated.unshift({
+                    senderId: contactId,
+                    senderUsername: fixedMessage.receiverId.toString() + " Idli kullanıcı", // İstersen mesaj.senderUsername kullan
+                    senderOnline: true, // Başlangıçta true, SignalR’dan değişecek
+                    lastMessage:
+                        fixedMessage.text ||
+                        (["jpg", "jpeg", "png", "gif", "webp"].includes(fixedMessage.fileUrl?.split(".").pop()?.toLowerCase() || "")
+                            ? "📷 resim gönderdi"
+                            : fixedMessage.fileUrl
+                                ? `${fixedMessage.fileUrl.split(".").pop()} uzantılı dosya gönderdi`
+                                : ""),
+                    sendTime: fixedMessage.timestamp,
+                    isRead: false,
+                    unreadCount: fixedMessage.senderId === currentUserId ? 0 : 1,
+                    fileUrl: fixedMessage.fileUrl,
+                    fileName: fixedMessage.fileName,
+
+                });
+            }
+
+
+            return updated;
+        });
+    }, setInboxItems, navigate);
+    const { messages, fetchMessages } = getMessages(navigate);
     const [localMessages, setLocalMessages] = useState<Message[]>(messages);
 
-    const navigate = useNavigate();
+
 
     const toggleDarkMode = () => {
         setDarkMode((prev) => (prev === "light" ? "dark" : "light"));
@@ -133,57 +202,8 @@ export function Messenger({ onLogout }: MessengerProps) {
         localStorage.setItem("theme", darkMode);
     }, [darkMode]);
 
-    useSignalR(currentUserId?.toString() || "", (message: any) => {
-        const fixedMessage: Message = {
-            id: message.messageId,
-            senderId: message.senderId,
-            receiverId: message.receiverId,
-            content: message.text,
-            timestamp: message.sendTime || new Date().toISOString(),
-            isRead: message.isRead,
-        };
 
-        if (
-            selectedUser &&
-            (fixedMessage.senderId === selectedUser.id ||
-                fixedMessage.receiverId === selectedUser.id)
-        ) {
-            setLocalMessages((prev) => [...prev, fixedMessage]);
-        }
 
-        const contactId =
-            fixedMessage.senderId === currentUserId
-                ? fixedMessage.receiverId
-                : fixedMessage.senderId;
-
-        setInboxItems((prevInbox) => {
-            const updated = [...prevInbox];
-            const index = updated.findIndex((item) => item.senderId === contactId);
-            if (index !== -1) {
-                updated[index] = {
-                    ...updated[index],
-                    lastMessage: fixedMessage.content,
-                    sendTime: fixedMessage.timestamp,
-                    isRead: false,
-                    unreadCount:
-                        fixedMessage.senderId === currentUserId
-                            ? 0
-                            : updated[index].unreadCount + 1,
-                };
-            } else {
-                updated.unshift({
-                    senderId: contactId,
-                    senderUsername: "Bilinmeyen",
-                    senderOnline: true,
-                    lastMessage: fixedMessage.content,
-                    sendTime: fixedMessage.timestamp,
-                    isRead: false,
-                    unreadCount: fixedMessage.senderId === currentUserId ? 0 : 1,
-                });
-            }
-            return updated;
-        });
-    });
 
     useEffect(() => {
         setLocalMessages(messages);
@@ -198,7 +218,7 @@ export function Messenger({ onLogout }: MessengerProps) {
     useEffect(() => {
         const loadInbox = async () => {
             if (!currentUserId) return;
-            const data = await fetchInbox(currentUserId);
+            const data = await fetchInbox(currentUserId, navigate);
             setInboxItems(data);
         };
         loadInbox();
@@ -232,59 +252,68 @@ export function Messenger({ onLogout }: MessengerProps) {
     };
 
 
-    const handleSendMessage = async (content: string) => {
-
-        if (!currentUserId || !selectedUser || !selectedUser.id) {
+    const handleSendMessage = async (content: string, file?: File | null) => {
+        if (!currentUserId || !selectedUser?.id) {
             console.warn("Seçili kullanıcı yok, mesaj gönderilemez!");
             return;
         }
+
         try {
             const newMessage = await sendMessageApi(
                 content,
                 currentUserId,
-                selectedUser.id
+                selectedUser.id,
+                navigate,
+                file || undefined,
+
+                // File varsa gönder, yoksa undefined
             );
+            if (newMessage) {
 
-            const fixedMessage: Message = {
-                id: newMessage.messageId,
-                senderId: newMessage.senderId,
-                receiverId: newMessage.receiverId,
-                content: newMessage.text,
-                timestamp: newMessage.sendTime || new Date().toISOString(),
-                isRead: newMessage.isRead,
-            };
+                const fixedMessage: Message = {
+                    id: newMessage.messageId,
+                    senderId: newMessage.senderId,
+                    receiverId: newMessage.receiverId,
+                    text: newMessage.text,
+                    timestamp: newMessage.sendTime || new Date().toISOString(),
+                    isRead: newMessage.isRead,
+                };
 
-            setLocalMessages((prev) => [...prev, fixedMessage]);
 
-            const contactId = selectedUser.id;
-            setInboxItems((prevInbox) => {
-                const updated = [...prevInbox];
-                const index = updated.findIndex((item) => item.senderId === contactId);
-                if (index !== -1) {
-                    updated[index] = {
-                        ...updated[index],
-                        lastMessage: fixedMessage.content,
-                        sendTime: fixedMessage.timestamp,
-                        isRead: true,
-                        unreadCount: 0,
-                    };
-                } else {
-                    updated.unshift({
-                        senderId: contactId,
-                        senderUsername: selectedUser.username,
-                        senderOnline: selectedUser.isOnline,
-                        lastMessage: fixedMessage.content,
-                        sendTime: fixedMessage.timestamp,
-                        isRead: true,
-                        unreadCount: 0,
-                    });
-                }
-                return updated;
-            });
-        } catch (error) {
+                setLocalMessages((prev) => [...prev, fixedMessage]);
+
+                const contactId = selectedUser.id;
+                setInboxItems((prevInbox) => {
+                    const updated = [...prevInbox];
+                    const index = updated.findIndex((item) => item.senderId === contactId);
+                    if (index !== -1) {
+                        updated[index] = {
+                            ...updated[index],
+                            lastMessage: fixedMessage.text,
+                            sendTime: fixedMessage.timestamp,
+                            isRead: true,
+                            unreadCount: 0,
+                        };
+                    } else {
+                        updated.unshift({
+                            senderId: contactId,
+                            senderUsername: selectedUser.username,
+                            senderOnline: selectedUser.isOnline,
+                            lastMessage: fixedMessage.text,
+                            sendTime: fixedMessage.timestamp,
+                            isRead: true,
+                            unreadCount: 0,
+                        });
+                    }
+                    return updated;
+                });
+            }
+        }
+        catch (error) {
             console.error("Mesaj gönderirken hata:", error);
         }
     };
+
 
     return (
         <ThemeProvider theme={theme}>

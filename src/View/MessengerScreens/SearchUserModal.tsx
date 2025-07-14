@@ -17,6 +17,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 import getUser from "../../services/addUser";
 import type { User } from "../../Models/types";
+import { useNavigate } from "react-router-dom";
 
 interface SearchUserModalProps {
     open: boolean;
@@ -35,13 +36,13 @@ export function SearchUserModal({
     const theme = useTheme();
     const savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
     const currentUser = savedUser ? JSON.parse(savedUser) : null;
-
+    const navigate = useNavigate();
     const handleSearch = async () => {
         if (!searchTerm.trim()) return;
 
         setLoading(true);
         try {
-            const user = await getUser(searchTerm.trim());
+            const user = await getUser(searchTerm.trim(), navigate);
             setResult(user); // null gelirse zaten aşağıda gösterilmeyecek
         } catch (error) {
             console.error("Arama hatası:", error);

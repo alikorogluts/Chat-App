@@ -1,23 +1,28 @@
-// src/services/messageApi.ts
 import axios from "axios";
 import type { InboxItem } from "../Models/ApiResponse";
-
 import { apiConfig } from "../connection";
+import { getCurrentUser } from "../utils/getLocalUser";
+import { logout } from "../utils/logout";
+import type { NavigateFunction } from "react-router-dom";
 
-
-
-export const fetchInbox = async (userId: number): Promise<InboxItem[]> => {
-    if (!userId) return [];
+export const fetchInbox = async (
+    userId: number,
+    navigate: NavigateFunction
+): Promise<InboxItem[]> => {
+    const user = getCurrentUser();
+    if (!user || !userId) {
+        logout(navigate);
+        return [];
+    }
 
     try {
-        const response = await axios.get(
-            apiConfig.connectionString + `Message/GetInbox`,
-            {
-                params: { receiverId: userId },
-                withCredentials: true,
-                headers: { Accept: "*/*" },
-            }
-        );
+        const response = await axios.get(apiConfig.connectionString + `api/Message/GetInbox`, {
+            params: { receiverId: userId },
+            headers: {
+                Accept: "*/*",
+                Authorization: `Bearer ${user.token}`,
+            },
+        });
 
         return response.data.map((item: any) => ({
             senderId: item.contactId,
@@ -29,10 +34,11 @@ export const fetchInbox = async (userId: number): Promise<InboxItem[]> => {
             unreadCount: item.unreadCount ?? 0,
         }));
     } catch (error: any) {
-        console.error(
-            "Error fetching inbox:",
-            error.response?.data || error.message || error
-        );
+        if (error.response?.status === 401 || error.response?.status === 403) {
+            logout(navigate);
+        } else {
+            console.error("Error fetching inbox:", error.response?.data || error.message || error);
+        }
         return [];
     }
 };

@@ -19,4 +19,6 @@ export interface InboxItem {
     sendTime: string;
     isRead: boolean;
     unreadCount: number;
+    fileUrl?: string; // 💡 Yeni: Dosya bağlantısı
+    fileName?: string;
 }

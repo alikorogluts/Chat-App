@@ -9,13 +9,15 @@ export interface RegisterResponse {
 
 export const registerApi = async (
     password: string,
-    userName: string
+    userName: string,
+    email: string
 ): Promise<RegisterResponse> => {
     const response = await axios.post(
-        apiConfig.connectionString + 'Account/Register',
+        apiConfig.connectionString + 'api/Account/Register',
         {
             password,
             userName,
+            email
         },
         {
             headers: {

@@ -32,13 +32,13 @@ export const ChatHeader = ({
     };
 
     const formatLastSeen = (lastSeen?: string) => {
-        if (!lastSeen) return "Offline";
+        if (!lastSeen) return "";//çevrimdışı
         const date = new Date(lastSeen);
-        return `Last seen ${date.toLocaleString([], {
+        return `Son görülme ${date.toLocaleString("tr-TR", {
             hour: "2-digit",
             minute: "2-digit",
             day: "numeric",
-            month: "short"
+            month: "short",
         })}`;
     };
 
@@ -133,11 +133,12 @@ export const ChatHeader = ({
                                     fontSize: "0.8rem",
                                     mr: 0.5
                                 }} />
-                                Online
+                                {/* Çevrimiçi*/}
                             </Box>
                         ) : formatLastSeen(user.lastSeen)}
                     </Typography>
                 </Box>
+
 
                 <IconButton
                     color="inherit"
@@ -181,7 +182,10 @@ export const ChatHeader = ({
                             }
                         }
                     }}
+
                 >
+
+
                     <MenuItem>
                         <Typography variant="body2" mr={2} fontWeight={500} color="black" >
                             Arka Plan Göster

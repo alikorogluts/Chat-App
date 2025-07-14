@@ -4,8 +4,10 @@ import type { loginResponse } from "../Models/ApiResponse";
 import { apiConfig } from "../connection";
 
 const login = async (data: loginRequest): Promise<loginResponse> => {
+
+
     const response = await axios.post<loginResponse>(
-        apiConfig.connectionString + "Account/Login",
+        apiConfig.connectionString + "api/Account/Login",
         data,
         {
             headers: {
@@ -14,6 +16,7 @@ const login = async (data: loginRequest): Promise<loginResponse> => {
             }
         }
     );
+    console.log("api isteği, başarılı", response);
     return response.data;
 };
 
