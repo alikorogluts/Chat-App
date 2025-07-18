@@ -35,8 +35,6 @@ const getBackgrounds = async (navigate: NavigateFunction): Promise<Backgrounds |
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {
             logout(navigate);
-        } else {
-            console.error("Backgrounds API hatası:", error);
         }
         return null;
     }

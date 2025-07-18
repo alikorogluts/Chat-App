@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import {
     Dialog, DialogTitle, DialogContent, DialogActions,
     Button, TextField, Box, Typography, CircularProgress,
-    Alert, Link, useTheme
+    Alert, useTheme
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import sendCode from '../../services/sendCode';
 import ResetPassword from '../../services/ResetPassword';
 
 import axios from 'axios';
+import VerificationCodeStep from './VerifyCode';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialog-paper': {
@@ -21,32 +22,6 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
     },
 }));
 
-const CodeInput = styled(TextField)(({ theme }) => ({
-    width: 50,
-    height: 60,
-    '& input': {
-        textAlign: 'center',
-        fontSize: '1.8rem',
-        fontWeight: 700,
-        color: theme.palette.primary.main,
-        padding: theme.spacing(1.5),
-    },
-    '& .MuiOutlinedInput-root': {
-        borderRadius: 14,
-        '& fieldset': {
-            borderWidth: 2,
-            borderColor: theme.palette.divider,
-        },
-        '&:hover fieldset': {
-            borderColor: theme.palette.primary.light,
-        },
-        '&.Mui-focused fieldset': {
-            borderColor: theme.palette.primary.main,
-            borderWidth: 3,
-            boxShadow: `0 0 0 3px ${theme.palette.primary.light}`,
-        },
-    },
-}));
 
 const ActionButton = styled(Button)(({ theme }) => ({
     borderRadius: 14,
@@ -114,8 +89,8 @@ const ForgotPassword: React.FC = () => {
         setSuccessMessage("");
 
         try {
-            const result = await sendCode(email);
-            console.log("API cevabı:", result); // ⬅️ Konsolda görmek istersen
+            const result = await sendCode(email, 1);
+            // ⬅️ Konsolda görmek istersen
 
             if (result.success) {
                 setSuccessMessage(result.message || "Doğrulama kodu başarıyla gönderildi.");
@@ -126,7 +101,6 @@ const ForgotPassword: React.FC = () => {
                 setError(result.message || "Sunucudan beklenmeyen bir hata alındı.");
             }
         } catch (err: any) {
-            console.error("API hatası:", err);
 
             // Eğer sunucu hatası varsa detaylı göster
             if (axios.isAxiosError(err) && err.response?.data?.message) {
@@ -158,10 +132,9 @@ const ForgotPassword: React.FC = () => {
                 setSuccessMessage(result.message || 'Şifreniz başarıyla sıfırlandı.');
                 setStep(3);
             } else {
-                setError(result.message || 'Doğrulama başarısız oldu.');
+                setError(result.message || result.message);
             }
         } catch (err: any) {
-            console.error('Şifre sıfırlama hatası:', err);
 
             if (axios.isAxiosError(err) && err.response?.data?.message) {
                 setError(err.response.data.message);
@@ -184,7 +157,7 @@ const ForgotPassword: React.FC = () => {
         setSuccessMessage('');
 
         try {
-            const result = await sendCode(email);
+            const result = await sendCode(email, 1);
 
             if (result.success) {
                 setSuccessMessage(result.message || 'Doğrulama kodu başarıyla tekrar gönderildi.');
@@ -192,10 +165,9 @@ const ForgotPassword: React.FC = () => {
                 setCode(Array(6).fill(''));
                 inputsRef.current[0]?.focus();
             } else {
-                setError(result.message || 'Kod gönderilirken bir hata oluştu.');
+                setError(result.message || result.message);
             }
         } catch (err: any) {
-            console.error('Kod yeniden gönderme hatası:', err);
 
             if (axios.isAxiosError(err) && err.response?.data?.message) {
                 setError(err.response.data.message);
@@ -337,47 +309,19 @@ const ForgotPassword: React.FC = () => {
 
                         {step === 2 && (
                             <>
-                                <Typography variant="body1" color="textSecondary" textAlign="center">
-                                    <span style={{ fontWeight: 700 }}>{email}</span> adresine bir doğrulama kodu gönderdik. Lütfen aşağıya girin.
-                                </Typography>
+                                <VerificationCodeStep
+                                    email={email}
+                                    code={code}
+                                    onCodeChange={handleCodeChange}
+                                    onKeyDown={handleKeyDown}
+                                    resendTime={resendTime}
+                                    onResendCode={handleResendCode}
+                                    loading={loading}
+                                    inputsRef={inputsRef}
+                                />
 
-                                <Box display="flex" justifyContent="center" gap={1.5} mt={2}>
-                                    {code.map((digit, idx) => (
-                                        <CodeInput
-                                            key={idx}
-                                            inputProps={{ maxLength: 1, inputMode: 'numeric' }}
-                                            value={digit}
-                                            onChange={(e) => handleCodeChange(e.target.value, idx)}
-                                            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => handleKeyDown(e, idx)}
-                                            inputRef={(el) => (inputsRef.current[idx] = el)}
-                                            disabled={loading}
-                                        />
 
-                                    ))}
-                                </Box>
 
-                                <Box textAlign="center" mt={2}>
-                                    <Typography variant="body2" color="textSecondary">
-                                        {resendTime > 0 ? (
-                                            `Kodu tekrar göndermek için ${resendTime} saniye bekleyin`
-                                        ) : (
-                                            <Link
-                                                component="button"
-                                                onClick={handleResendCode}
-                                                disabled={loading}
-                                                color="primary"
-                                                underline="hover"
-                                                sx={{
-                                                    cursor: 'pointer',
-                                                    fontWeight: 600,
-                                                    fontSize: '0.95rem'
-                                                }}
-                                            >
-                                                Kodu Tekrar Gönder
-                                            </Link>
-                                        )}
-                                    </Typography>
-                                </Box>
                             </>
                         )}
 
@@ -447,7 +391,7 @@ const ForgotPassword: React.FC = () => {
                         )}
                     </Box>
                 </DialogActions>
-            </StyledDialog>
+            </StyledDialog >
         </>
     );
 };

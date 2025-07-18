@@ -14,6 +14,7 @@ export interface MessageItem {
     senderId: number;
     receiverId: number;
     fileUrl: string;
+    fileName: string
 }
 
 export function getMessages(navigate: NavigateFunction) {
@@ -54,7 +55,6 @@ export function getMessages(navigate: NavigateFunction) {
             if (error.response?.status === 401 || error.response?.status === 403) {
                 logout(navigate);
             } else {
-                console.error("Mesajlar alınamadı:", error);
             }
         } finally {
             setIsLoading(false);

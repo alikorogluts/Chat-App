@@ -31,7 +31,6 @@ const ResetPassword = async (
         }
     );
 
-    console.log("API isteği başarılı:", response.data);
     return response.data;
 };
 

@@ -44,8 +44,6 @@ const getUser = async (
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {
             logout(navigate);
-        } else {
-            console.error("Kullanıcı getirilemedi:", error);
         }
         return null;
     }

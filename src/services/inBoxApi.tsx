@@ -32,12 +32,12 @@ export const fetchInbox = async (
             sendTime: item.sendTime,
             isRead: item.isRead,
             unreadCount: item.unreadCount ?? 0,
+
+
         }));
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {
             logout(navigate);
-        } else {
-            console.error("Error fetching inbox:", error.response?.data || error.message || error);
         }
         return [];
     }

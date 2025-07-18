@@ -16,7 +16,6 @@ const login = async (data: loginRequest): Promise<loginResponse> => {
             }
         }
     );
-    console.log("api isteği, başarılı", response);
     return response.data;
 };
 

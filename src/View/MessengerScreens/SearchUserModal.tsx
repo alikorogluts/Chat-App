@@ -45,7 +45,6 @@ export function SearchUserModal({
             const user = await getUser(searchTerm.trim(), navigate);
             setResult(user); // null gelirse zaten aşağıda gösterilmeyecek
         } catch (error) {
-            console.error("Arama hatası:", error);
             setResult(null);
         } finally {
             setLoading(false);

@@ -40,10 +40,44 @@ export const UserList = ({
         .filter((u) => u.senderUsername.toLowerCase().includes(search.toLowerCase()))
         .sort((a, b) => new Date(b.sendTime).getTime() - new Date(a.sendTime).getTime());
 
-    const formatTime = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const formatTime = (timestamp: string) => {
+        const date = new Date(timestamp);
+
+        // UTC zamanını al
+        const utcHours = date.getUTCHours();
+
+        // +3 saat ekle
+        const adjustedDate = new Date(date);
+        adjustedDate.setUTCHours(utcHours + 3);
+
+        return adjustedDate.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false // İstersen true yapıp AM/PM ekleyebilirsin
+        });
     };
+    const getFileMessage = (fileUrl: string): string => {
+        const parts = fileUrl.split(".");
+        const ext = parts.length > 1 ? parts.pop()?.toLowerCase() : null;
+
+        const imageTypes = ["jpg", "jpeg", "png", "gif", "webp"];
+        const pdfTypes = ["pdf"];
+        const docTypes = ["doc", "docx"];
+        const excelTypes = ["xls", "xlsx"];
+        const zipTypes = ["zip", "rar", "7z"];
+
+        if (!ext) return ` ${fileUrl}`;
+
+        if (imageTypes.includes(ext)) return "📷 Resim gönderdi";
+        if (pdfTypes.includes(ext)) return "📄 PDF dosyası gönderdi";
+        if (docTypes.includes(ext)) return "📝 Word belgesi gönderdi";
+        if (excelTypes.includes(ext)) return "📊 Excel dosyası gönderdi";
+        if (zipTypes.includes(ext)) return "🗜️ Arşiv dosyası gönderdi";
+
+        return `📎 ${ext.toUpperCase()} dosyası gönderdi`;
+    };
+
+
 
     const bgColor = isDarkMode ? theme.palette.background.paper : "#ffffff";
     const hoverColor = isDarkMode ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.04)";
@@ -179,9 +213,28 @@ export const UserList = ({
                                         {formatTime(u.sendTime)}
                                     </Typography>
                                 </Box>
-                                <Typography variant="body2" sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: u.unreadCount > 0 ? 600 : 500, color: u.unreadCount > 0 ? textColor : secondaryTextColor, fontSize: "0.85rem", mt: 0.5 }}>
-                                    {u.lastMessage || "Yeni sohbet başlatıldı"}
+                                <Typography
+                                    variant="body2"
+                                    sx={{
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
+                                        fontWeight: u.unreadCount > 0 ? 600 : 500,
+                                        color: u.unreadCount > 0 ? textColor : secondaryTextColor,
+                                        fontSize: "0.85rem",
+                                        mt: 0.5
+                                    }}
+                                >
+                                    {(() => {
+                                        return u.lastMessage?.trim()
+
+                                            ? getFileMessage(u.lastMessage)
+                                            : "Yeni bir mesajınız var";
+                                    })()}
                                 </Typography>
+
+
+
                             </Box>
 
                             {u.unreadCount > 0 && (

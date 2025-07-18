@@ -22,7 +22,6 @@ export const getCurrentUser = (): User | null => {
 
         return null;
     } catch (error) {
-        console.error("Kullanıcı verisi çözümlenemedi:", error);
         return null;
     }
 };

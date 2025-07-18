@@ -14,8 +14,9 @@ import {
 } from "@mui/material";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
-import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 import PersonSearchIcon from "@mui/icons-material/PersonSearch";
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+
 
 import { UserList } from "./InBox";
 import { ChatPanel } from "./ChatPanel";
@@ -30,6 +31,11 @@ import { fetchInbox } from "../../services/inBoxApi";
 import { useNavigate } from "react-router-dom";
 import type { PaletteMode } from "@mui/material";
 import type { InboxItem } from "../../Models/ApiResponse";
+import { apiConfig } from "../../connection";
+import { AccountDialog } from "./AccountDialog";
+import sendMail from "../../services/sendMail";
+import changePassword from "../../services/changePassword";
+import toast, { Toaster } from "react-hot-toast";
 
 interface MessengerProps {
     user: { id: number; username: string };
@@ -105,21 +111,77 @@ export function Messenger({ onLogout }: MessengerProps) {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [inboxItems, setInboxItems] = useState<InboxItem[]>([]);
     const navigate = useNavigate();
+    const [accountDialogOpen, setAccountDialogOpen] = useState(false);
+
+    const openAccountDialog = () => setAccountDialogOpen(true);
+    const closeAccountDialog = () => setAccountDialogOpen(false); const savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
+    const currentUser = savedUser ? JSON.parse(savedUser) : null;
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+
+    const handlePasswordChange = async (newPassword: string, oldPassword: string) => {
+        closeAccountDialog();
+        const result = await changePassword(newPassword, oldPassword, navigate);
+
+        if (result) {
+            showResult(result);
+        } else {
+            toast.error(result);
+        }
+
+    };
+
+    const handleSendEmail = async (subject: string, body: string) => {
+        closeAccountDialog();
+        const result = await sendMail(subject, body, navigate);
+
+        if (result) {
+            showResult(result);
+        } else {
+            toast.error("Mail gönderimi başarısız oldu.");
+        }
+    };
+    const showResult = (result: { success: boolean; message: string }) => {
+        if (result.success) {
+            toast.success(result.message);
+        } else {
+            toast.error(result.message);
+        }
+    };
+
+
+
+    const handleSecureLogout = () => {
+        closeAccountDialog();
+        handleLogout();
+    };
+
+    const handleLogout = () => {
+        onLogout();
+        navigate("/login");
+    };
 
 
 
 
     // localStorage
-    const savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
-    const currentUser = savedUser ? JSON.parse(savedUser) : null;
-    const currentUserId: number | undefined = currentUser?.id;
-    useSignalR(currentUserId?.toString() || "", (message) => {
+
+    useSignalR(currentUser?.id?.toString() || "", (message) => {
+
+
         const fixedMessage: Message = {
             id: message.id, // ID alanı doğrudan eşleşti
             senderId: message.senderId,
             receiverId: message.receiverId,
             text: message.text,
-            fileUrl: message.fileUrl,
+            fileUrl:
+                typeof message.fileUrl === "string" && message.fileUrl.trim() !== ""
+                    ? message.fileUrl.startsWith("http")
+                        ? message.fileUrl
+                        : apiConfig.connectionString + message.fileUrl
+                    : "",
 
             fileName: message.fileUrl?.split("/").pop() || "", // daha önce message.text olabilir diye kontrol vardı, artık sabit
             timestamp: message.timestamp ?? new Date().toISOString(),
@@ -137,7 +199,7 @@ export function Messenger({ onLogout }: MessengerProps) {
         }
 
         const contactId =
-            fixedMessage.senderId === currentUserId
+            fixedMessage.senderId === currentUser?.id
                 ? fixedMessage.receiverId
                 : fixedMessage.senderId;
 
@@ -149,27 +211,24 @@ export function Messenger({ onLogout }: MessengerProps) {
             if (index !== -1) {
                 updated[index] = {
                     ...updated[index],
-                    lastMessage: fixedMessage.text,
-                    sendTime: fixedMessage.timestamp,
+                    lastMessage: fixedMessage.text || fixedMessage.fileUrl || "Yeni bir mesajınız var", sendTime: fixedMessage.timestamp,
                     isRead: false,
+                    fileUrl: fixedMessage.fileUrl,
+                    fileName: fixedMessage.fileName,
                     unreadCount:
-                        fixedMessage.senderId === currentUserId ? 0 : updated[index].unreadCount + 1,
+                        fixedMessage.senderId === currentUser?.id ? 0 : updated[index].unreadCount + 1,
                 };
             } else {
                 updated.unshift({
                     senderId: contactId,
                     senderUsername: fixedMessage.receiverId.toString() + " Idli kullanıcı", // İstersen mesaj.senderUsername kullan
                     senderOnline: true, // Başlangıçta true, SignalR’dan değişecek
-                    lastMessage:
-                        fixedMessage.text ||
-                        (["jpg", "jpeg", "png", "gif", "webp"].includes(fixedMessage.fileUrl?.split(".").pop()?.toLowerCase() || "")
-                            ? "📷 resim gönderdi"
-                            : fixedMessage.fileUrl
-                                ? `${fixedMessage.fileUrl.split(".").pop()} uzantılı dosya gönderdi`
-                                : ""),
+                    lastMessage: fixedMessage.text || fixedMessage.fileUrl || "Yeni bir mesajınız var",
+
+
                     sendTime: fixedMessage.timestamp,
                     isRead: false,
-                    unreadCount: fixedMessage.senderId === currentUserId ? 0 : 1,
+                    unreadCount: fixedMessage.senderId === currentUser?.id ? 0 : 1,
                     fileUrl: fixedMessage.fileUrl,
                     fileName: fixedMessage.fileName,
 
@@ -210,19 +269,19 @@ export function Messenger({ onLogout }: MessengerProps) {
     }, [messages]);
 
     useEffect(() => {
-        if (selectedUser && currentUserId) {
-            fetchMessages(currentUserId, selectedUser.id);
+        if (selectedUser && currentUser?.id) {
+            fetchMessages(currentUser?.id, selectedUser.id);
         }
-    }, [selectedUser, fetchMessages, currentUserId]);
+    }, [selectedUser, fetchMessages, (currentUser?.id)]);
 
     useEffect(() => {
         const loadInbox = async () => {
-            if (!currentUserId) return;
-            const data = await fetchInbox(currentUserId, navigate);
+            if (!currentUser?.id) return;
+            const data = await fetchInbox(currentUser?.id, navigate);
             setInboxItems(data);
         };
         loadInbox();
-    }, [currentUserId]);
+    }, [(currentUser?.id)]);
 
     const handleSelectUser = (user: User) => {
         setSelectedUser(user);
@@ -246,28 +305,26 @@ export function Messenger({ onLogout }: MessengerProps) {
         );
     };
 
-    const handleLogout = () => {
-        onLogout();
-        navigate("/login");
-    };
+
 
 
     const handleSendMessage = async (content: string, file?: File | null) => {
-        if (!currentUserId || !selectedUser?.id) {
-            console.warn("Seçili kullanıcı yok, mesaj gönderilemez!");
+        setIsSubmitting(true);
+        if (!currentUser?.id || !selectedUser?.id) {
             return;
         }
 
         try {
             const newMessage = await sendMessageApi(
                 content,
-                currentUserId,
+                currentUser?.id,
                 selectedUser.id,
                 navigate,
                 file || undefined,
 
                 // File varsa gönder, yoksa undefined
             );
+
             if (newMessage) {
 
                 const fixedMessage: Message = {
@@ -275,12 +332,23 @@ export function Messenger({ onLogout }: MessengerProps) {
                     senderId: newMessage.senderId,
                     receiverId: newMessage.receiverId,
                     text: newMessage.text,
-                    timestamp: newMessage.sendTime || new Date().toISOString(),
+                    timestamp: (() => {
+                        const now = new Date();
+                        now.setHours(now.getHours() - 3);
+                        return now.toISOString();
+                    })(),
                     isRead: newMessage.isRead,
+                    fileName: newMessage.fileName,
+                    fileUrl: newMessage.fileUrl
                 };
 
 
                 setLocalMessages((prev) => [...prev, fixedMessage]);
+                const lastMessageText =
+                    fixedMessage.text ||
+                    fixedMessage.fileName ||
+                    fixedMessage.fileUrl ||
+                    "Yeni bir mesajınız var";
 
                 const contactId = selectedUser.id;
                 setInboxItems((prevInbox) => {
@@ -289,7 +357,7 @@ export function Messenger({ onLogout }: MessengerProps) {
                     if (index !== -1) {
                         updated[index] = {
                             ...updated[index],
-                            lastMessage: fixedMessage.text,
+                            lastMessage: lastMessageText,
                             sendTime: fixedMessage.timestamp,
                             isRead: true,
                             unreadCount: 0,
@@ -299,24 +367,30 @@ export function Messenger({ onLogout }: MessengerProps) {
                             senderId: contactId,
                             senderUsername: selectedUser.username,
                             senderOnline: selectedUser.isOnline,
-                            lastMessage: fixedMessage.text,
+                            lastMessage: lastMessageText,
                             sendTime: fixedMessage.timestamp,
                             isRead: true,
                             unreadCount: 0,
+                            fileUrl: fixedMessage.fileUrl,
+                            fileName: fixedMessage.fileName
                         });
+
                     }
                     return updated;
                 });
             }
         }
         catch (error) {
-            console.error("Mesaj gönderirken hata:", error);
+        }
+        finally {
+            setIsSubmitting(false);
         }
     };
 
 
     return (
         <ThemeProvider theme={theme}>
+
             <CssBaseline />
             <Box
                 height="100vh"
@@ -330,6 +404,39 @@ export function Messenger({ onLogout }: MessengerProps) {
                     },
                 }}
             >
+                <Toaster
+                    position="top-right"
+                    gutter={12} // toasts arası boşluk
+                    containerStyle={{
+                        top: 20,
+                        right: 20,
+                        left: 20,
+                        maxWidth: "100vw",
+                        padding: "0 16px",
+                    }}
+                    toastOptions={{
+                        style: {
+                            fontSize: "clamp(16px, 2.5vw, 18px)", // mobilde büyür, desktopta dengeli
+                            padding: "clamp(12px, 3vw, 20px)",
+                            borderRadius: "8px",
+                            background: "#1f2937", // zinc-800 gibi koyu arka plan
+                            color: "#fff",
+                            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                        },
+                        success: {
+                            iconTheme: {
+                                primary: "#22c55e", // yeşil
+                                secondary: "#fff",
+                            },
+                        },
+                        error: {
+                            iconTheme: {
+                                primary: "#ef4444", // kırmızı
+                                secondary: "#fff",
+                            },
+                        },
+                    }}
+                />
                 {(isDesktop || isTablet || !selectedUser) && (
                     <Box
                         width={{ xs: "100%", sm: "40%", md: isTablet ? "35%" : "30%" }}
@@ -359,7 +466,7 @@ export function Messenger({ onLogout }: MessengerProps) {
                                     Mesajlar
                                 </Typography>
 
-                                {/* Kullanıcı bilgileri butonu */}
+
 
 
                                 {/* Tema geçiş */}
@@ -367,21 +474,33 @@ export function Messenger({ onLogout }: MessengerProps) {
                                     {theme.palette.mode === "dark" ? <Brightness7Icon /> : <Brightness4Icon />}
                                 </IconButton>
 
-                                {/* Çıkış */}
-                                <IconButton color="inherit" onClick={handleLogout} size="large">
-                                    <ExitToAppIcon />
+                                {/* Kullanıcı bilgileri butonu */}
+
+                                <IconButton color="inherit" onClick={openAccountDialog} size="large">
+                                    <AccountCircleIcon />
                                 </IconButton>
+
+                                <AccountDialog
+                                    open={accountDialogOpen}
+                                    onClose={closeAccountDialog}
+                                    onPasswordChange={handlePasswordChange}
+                                    onSendEmail={handleSendEmail}
+                                    onSecureLogout={handleSecureLogout}
+                                />
                             </Toolbar>
 
                         </AppBar>
 
                         {/* KULLANICI LİSTESİ */}
+
                         <Box sx={{ overflowY: "auto", flex: 1 }}>
                             <UserList
                                 selectedUser={selectedUser}
                                 onSelectUser={handleSelectUser}
                                 onClearUnread={handleClearUnread}
                                 inboxItems={inboxItems}
+
+
                             />
                         </Box>
 
@@ -440,6 +559,7 @@ export function Messenger({ onLogout }: MessengerProps) {
                         onBack={() => setSelectedUser(null)}
                         showBackButton={!isDesktop && !isTablet}
                         onSendMessage={handleSendMessage}
+                        isSubmitting={isSubmitting}
                     />
                 )}
             </Box>

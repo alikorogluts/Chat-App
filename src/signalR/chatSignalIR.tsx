@@ -51,14 +51,12 @@ export const useSignalR = (
 
         // Mesaj alındığında tetiklenir
         connection.on("ReceiveMessage", (message: Message) => {
-            console.log("Mesaj alındı:", message);
             onReceiveMessage(message);
         });
 
         connection
-            .start()
-            .then(() => console.log("SignalR bağlantısı kuruldu"))
-            .catch(err => console.error("SignalR bağlantısı hatası:", err));
+            .start();
+
 
         connectionRef.current = connection;
 
