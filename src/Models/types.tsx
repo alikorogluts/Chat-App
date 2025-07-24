@@ -5,13 +5,16 @@ export interface User {
     username: string;
     isOnline: boolean;
     lastSeen?: string;
+    email?: string;
 }
 
 // types.ts
 
 export interface Message {
     id: number;
+    messageId?: number;
     senderId: number;
+    senderName?: string;
     receiverId: number;
     text: string;
     timestamp: string;

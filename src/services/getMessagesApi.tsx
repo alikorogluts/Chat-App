@@ -7,6 +7,7 @@ import { logout } from "../utils/logout";
 import type { NavigateFunction } from "react-router-dom";
 
 export interface MessageItem {
+    senderName?: string;
     messageId: number;
     text: string;
     sendTime: string;
@@ -14,7 +15,8 @@ export interface MessageItem {
     senderId: number;
     receiverId: number;
     fileUrl: string;
-    fileName: string
+    fileName: string;
+    ReadTime: string,
 }
 
 export function getMessages(navigate: NavigateFunction) {

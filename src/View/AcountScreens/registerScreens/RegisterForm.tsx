@@ -7,9 +7,9 @@ import {
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { registerApi } from "../../services/registerApi";
+import { registerApi } from "../../../services/registerApi";
 import VerificationCodeStep from "./VerifyCode";
-import sendCode from "../../services/sendCode";
+import sendCode from "../../../services/sendCode";
 
 
 
@@ -37,6 +37,7 @@ export function RegisterForm({ onError, setShowConfetti }: RegisterFormProps) {
     const [code, setCode] = useState<string[]>(Array(6).fill(''));
     const [resendTime, setResendTime] = useState(0);
     const [verificationLoading, setVerificationLoading] = useState(false);
+    const [passwordStrength, setStrongStrenght] = useState(0);
     const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
 
@@ -92,15 +93,25 @@ export function RegisterForm({ onError, setShowConfetti }: RegisterFormProps) {
             return;
         }
 
-        const isStrongPassword = (password: string) => {
+        const isStrongPassword = (password: string): boolean => {
             const minLength = 8;
             const hasUppercase = /[A-Z]/.test(password);
             const hasLowercase = /[a-z]/.test(password);
-            const hasDigit = /\d/.test(password);
+            const hasDigit = /[0-9]/.test(password);
             const hasSpecialChar = /[@$!%*?&]/.test(password);
 
-            return password.length >= minLength && hasUppercase && hasLowercase && hasDigit && hasSpecialChar;
+            return (
+                password.length >= minLength &&
+                hasUppercase &&
+                hasLowercase &&
+                hasDigit &&
+                hasSpecialChar
+            );
         };
+
+
+
+
 
         if (!isStrongPassword(password)) {
             setErrorMessage("Şifre en az 8 karakter olmalı, büyük/küçük harf, sayı ve özel karakter içermelidir.");
@@ -139,6 +150,50 @@ export function RegisterForm({ onError, setShowConfetti }: RegisterFormProps) {
             setIsSubmitting(false);
         }
     };
+    useEffect(() => {
+        if (password.length === 0) {
+            setStrongStrenght(0);
+            return;
+        }
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[A-Z]/.test(password)) strength++;
+        if (/[0-9]/.test(password)) strength++;
+        if (/[^A-Za-z0-9]/.test(password)) strength++;
+        setStrongStrenght(strength);
+    }, [password]);
+
+    const renderPasswordStrength = () => {
+        if (password.length === 0) return null;
+
+        const strengthTexts = ["Çok zayıf", "Zayıf", "orta", "Güçlü", "Çok güçlü"];
+
+        const strengthColors = [
+            "bg-red-500",
+            "bg-orange-500",
+            "bg-yellow-500",
+            "bg-green-400",
+            "bg-green-600"
+        ];
+
+        return (
+
+            <div className="mt-2">
+                <div className=" flex items-center justify-between mb-1">
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Şifre gücü:</span>
+                    <span className={`text-xs font-medium ${passwordStrength < 2 ? "text-red-500" : passwordStrength < 3 ? "text-yellow-500" : "text-green-500"}`}>
+                        {strengthTexts[passwordStrength]}
+                    </span>
+                </div>
+                <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-1.5">
+                    <div
+                        className={`h-1.5 rounded-full ${strengthColors[passwordStrength]}`}
+                        style={{ width: `${(passwordStrength + 1) * 20}%` }}></div>
+                </div>
+            </div>
+        )
+
+    }
 
     const handleVerify = async () => {
         const joinedCode = code.join('');
@@ -157,7 +212,7 @@ export function RegisterForm({ onError, setShowConfetti }: RegisterFormProps) {
             if (result?.success) {
                 setSuccessMessage("Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.");
                 setShowConfetti(true); // 🎉 konfeti patlat! 
-                setTimeout(() => navigate("/login"), 8000);
+                setTimeout(() => navigate("/login"), 5000);
             } else {
                 throw new Error(result?.message || "Kayıt başarısız.");
             }
@@ -363,6 +418,8 @@ export function RegisterForm({ onError, setShowConfetti }: RegisterFormProps) {
                         helperText="En az 8 karakter, büyük/küçük harf, sayı ve özel karakter içermeli"
                     />
 
+
+
                     <TextField
                         label="Şifre Tekrar"
                         type={showConfirmPassword ? "text" : "password"}
@@ -390,6 +447,7 @@ export function RegisterForm({ onError, setShowConfetti }: RegisterFormProps) {
                             }
                         }}
                     />
+                    {renderPasswordStrength()}
 
                     <Button
                         fullWidth
@@ -433,7 +491,6 @@ export function RegisterForm({ onError, setShowConfetti }: RegisterFormProps) {
                         onResendCode={handleResendCode}
                         loading={verificationLoading}
                         inputsRef={inputsRef}
-                    // error={verificationError}
                     />
 
                     <Button

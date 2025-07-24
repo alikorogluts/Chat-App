@@ -5,11 +5,11 @@ import {
     Alert, useTheme
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import sendCode from '../../services/sendCode';
-import ResetPassword from '../../services/ResetPassword';
+import sendCode from '../../../services/sendCode';
+import resetPassword from '../../../services/resetPass';
 
 import axios from 'axios';
-import VerificationCodeStep from './VerifyCode';
+import VerificationCodeStep from '../registerScreens/VerifyCode';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
     '& .MuiDialog-paper': {
@@ -126,7 +126,7 @@ const ForgotPassword: React.FC = () => {
         setSuccessMessage('');
 
         try {
-            const result = await ResetPassword(email, joinedCode);
+            const result = await resetPassword(email, joinedCode);
 
             if (result.success) {
                 setSuccessMessage(result.message || 'Şifreniz başarıyla sıfırlandı.');

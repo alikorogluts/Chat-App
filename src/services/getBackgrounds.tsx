@@ -5,8 +5,8 @@ import { logout } from "../utils/logout";
 import type { NavigateFunction } from "react-router-dom";
 
 interface Backgrounds {
-    lightModeBackground?: string;
-    darkModeBackground?: string;
+    mobileModeBackground?: string;
+    webModeBackground?: string;
 }
 
 const getBackgrounds = async (navigate: NavigateFunction): Promise<Backgrounds | null> => {
@@ -21,6 +21,7 @@ const getBackgrounds = async (navigate: NavigateFunction): Promise<Backgrounds |
         const response = await axios.get(apiConfig.connectionString + "api/Message/GetBackground", {
             headers: {
                 "Content-Type": "application/json",
+                "Cache-Control": "no-cache",
                 Accept: "application/json",
                 Authorization: `Bearer ${user.token}`,
             },
@@ -28,9 +29,10 @@ const getBackgrounds = async (navigate: NavigateFunction): Promise<Backgrounds |
 
         const data = response.data;
 
+
         return {
-            lightModeBackground: data.lightMode,
-            darkModeBackground: data.darkMode,
+            mobileModeBackground: data.mobilMode,
+            webModeBackground: data.webMode,
         };
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {

@@ -7,7 +7,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from "react-router-dom";
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import login from '../../services/loginApi';
+import login from '../../../services/loginApi';
 import ForgetPassword from './ForgetPassword';
 
 interface Props {
@@ -59,7 +59,8 @@ export default function Login({ onLogin }: Props) {
             const safeUser = {
                 id: user.id,
                 username: user.username,
-                token: user.token
+                token: user.token,
+                email: user.email
             };
 
             if (remember) {

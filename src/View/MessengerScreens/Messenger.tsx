@@ -18,9 +18,9 @@ import PersonSearchIcon from "@mui/icons-material/PersonSearch";
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 
 
-import { UserList } from "./InBox";
-import { ChatPanel } from "./ChatPanel";
-import { SearchUserModal } from "./SearchUserModal";
+import { UserList } from "./inboxScreens/InBox";
+import { ChatPanel } from "./chatScreens/chatPanel/ChatPanel";
+import { SearchUserModal } from "./inboxScreens/SearchUserModal";
 
 import { type User, type Message } from "../../Models/types";
 import { getMessages } from "../../services/getMessagesApi";
@@ -32,7 +32,7 @@ import { useNavigate } from "react-router-dom";
 import type { PaletteMode } from "@mui/material";
 import type { InboxItem } from "../../Models/ApiResponse";
 import { apiConfig } from "../../connection";
-import { AccountDialog } from "./AccountDialog";
+import { AccountDialog } from "./inboxScreens/accountDialog/AccountDialog";
 import sendMail from "../../services/sendMail";
 import changePassword from "../../services/changePassword";
 import toast, { Toaster } from "react-hot-toast";
@@ -162,9 +162,16 @@ export function Messenger({ onLogout }: MessengerProps) {
         onLogout();
         navigate("/login");
     };
-
-
-
+    const updateOrDeleteMessage = (messageId: number, newText?: string) => {
+        console.log(localMessages);
+        setLocalMessages((prev) =>
+            newText === undefined
+                ? prev.filter((msg) => msg.id !== messageId) // Silme
+                : prev.map((msg) =>
+                    msg.id === messageId ? { ...msg, text: newText } : msg // Güncelleme
+                )
+        );
+    };
 
     // localStorage
 
@@ -172,7 +179,7 @@ export function Messenger({ onLogout }: MessengerProps) {
 
 
         const fixedMessage: Message = {
-            id: message.id, // ID alanı doğrudan eşleşti
+            id: message.messageId || 0, // ID alanı doğrudan eşleşti
             senderId: message.senderId,
             receiverId: message.receiverId,
             text: message.text,
@@ -182,7 +189,7 @@ export function Messenger({ onLogout }: MessengerProps) {
                         ? message.fileUrl
                         : apiConfig.connectionString + message.fileUrl
                     : "",
-
+            senderName: message.senderName,
             fileName: message.fileUrl?.split("/").pop() || "", // daha önce message.text olabilir diye kontrol vardı, artık sabit
             timestamp: message.timestamp ?? new Date().toISOString(),
             isRead: message.isRead ?? false,
@@ -221,7 +228,7 @@ export function Messenger({ onLogout }: MessengerProps) {
             } else {
                 updated.unshift({
                     senderId: contactId,
-                    senderUsername: fixedMessage.receiverId.toString() + " Idli kullanıcı", // İstersen mesaj.senderUsername kullan
+                    senderUsername: fixedMessage.senderName || fixedMessage.receiverId.toString() + " Idli kullanıcı", // İstersen mesaj.senderUsername kullan
                     senderOnline: true, // Başlangıçta true, SignalR’dan değişecek
                     lastMessage: fixedMessage.text || fixedMessage.fileUrl || "Yeni bir mesajınız var",
 
@@ -234,14 +241,16 @@ export function Messenger({ onLogout }: MessengerProps) {
 
                 });
             }
+            console.log(localMessages);
+
+
 
 
             return updated;
         });
-    }, setInboxItems, navigate);
+    }, setInboxItems, navigate, updateOrDeleteMessage);
     const { messages, fetchMessages } = getMessages(navigate);
     const [localMessages, setLocalMessages] = useState<Message[]>(messages);
-
 
 
     const toggleDarkMode = () => {
@@ -260,6 +269,7 @@ export function Messenger({ onLogout }: MessengerProps) {
     useEffect(() => {
         localStorage.setItem("theme", darkMode);
     }, [darkMode]);
+
 
 
 
@@ -560,6 +570,7 @@ export function Messenger({ onLogout }: MessengerProps) {
                         showBackButton={!isDesktop && !isTablet}
                         onSendMessage={handleSendMessage}
                         isSubmitting={isSubmitting}
+                        updateOrDeleteMessage={updateOrDeleteMessage}
                     />
                 )}
             </Box>

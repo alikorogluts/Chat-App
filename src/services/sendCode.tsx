@@ -3,8 +3,6 @@ import { apiConfig } from "../connection";
 
 type VerificationType = 0 | 1 | 2;
 
-
-
 type SendCodeResponse = {
     success: boolean;
     message: string;
@@ -17,7 +15,7 @@ const sendCode = async (
     try {
         const response = await axios.post(
             apiConfig.connectionString + "api/Account/SendCode",
-            { email, type }, // request body
+            { email, type },
             {
                 headers: {
                     "Content-Type": "application/json"
@@ -26,10 +24,11 @@ const sendCode = async (
         );
         return response.data as SendCodeResponse;
     } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data || error.message
-        };
+        // Axios hatasıysa response.data'yı döndür, değilse message
+        if (axios.isAxiosError(error)) {
+            return error.response?.data ?? { success: false, message: error.message };
+        }
+        return { success: false, message: "Bilinmeyen bir hata oluştu." };
     }
 };
 

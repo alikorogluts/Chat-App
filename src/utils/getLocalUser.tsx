@@ -15,6 +15,7 @@ export const getCurrentUser = (): User | null => {
             user.id &&
             user.username &&
             user.token &&
+            user.email &&
             !isTokenExpired(user.token)
         ) {
             return user;

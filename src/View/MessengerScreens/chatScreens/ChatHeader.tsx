@@ -4,7 +4,7 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useState } from "react";
-import type { User } from "../../Models/types";
+import type { User } from "../../../Models/types";
 
 interface ChatHeaderProps {
     user: User;

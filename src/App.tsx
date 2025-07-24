@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Box } from "@mui/material";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Login from "./View/AcountScreens/Login";
-import { Register } from './View/AcountScreens/Register';
+import Login from "./View/AcountScreens/loginScreens/Login";
+import { Register } from './View/AcountScreens/registerScreens/Register';
 import { Messenger } from "./View/MessengerScreens/Messenger";
 
 import "./index.css";

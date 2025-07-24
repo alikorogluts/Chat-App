@@ -4,6 +4,7 @@ import type { MessageItem } from "./getMessagesApi";
 import { getCurrentUser } from "../utils/getLocalUser";
 import type { NavigateFunction } from "react-router-dom";
 import { logout } from "../utils/logout";
+import playNotificationSound from "../utils/playNotificationSound";
 
 export const sendMessageApi = async (
     text: string,
@@ -41,6 +42,9 @@ export const sendMessageApi = async (
                 },
             }
         );
+
+        console.log("response" + response);
+        playNotificationSound("send");
 
         return response.data;
     } catch (error: any) {

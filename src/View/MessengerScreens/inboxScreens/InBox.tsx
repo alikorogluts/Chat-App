@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import SearchIcon from "@mui/icons-material/Search";
-import type { User } from "../../Models/types";
-import type { InboxItem } from "../../Models/ApiResponse";
+import type { User } from "../../../Models/types";
+import type { InboxItem } from "../../../Models/ApiResponse";
 
 interface UserListProps {
     onSelectUser: (user: User) => void;

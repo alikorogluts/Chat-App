@@ -7,12 +7,12 @@
     "theme_color": "#1f2937",
     "icons": [
         {
-            "src": "https://api.iconify.design/mdi:lightning-bolt.svg",
+            "src": "/Copilot_20250721_170214 (1).png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "https://api.iconify.design/mdi:lightning-bolt.svg",
+            "src": "/Copilot_20250721_170214 (2).png",
             "sizes": "512x512",
             "type": "image/png"
         }

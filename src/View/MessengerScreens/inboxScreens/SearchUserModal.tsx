@@ -11,13 +11,18 @@ import {
     IconButton,
     useTheme,
     CircularProgress,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import SearchIcon from "@mui/icons-material/Search";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
-import getUser from "../../services/addUser";
-import type { User } from "../../Models/types";
+import getUser from "../../../services/addUser";
+import type { User } from "../../../Models/types";
 import { useNavigate } from "react-router-dom";
+import { getCurrentUser } from "../../../utils/getLocalUser";
 
 interface SearchUserModalProps {
     open: boolean;
@@ -34,8 +39,7 @@ export function SearchUserModal({
     const [result, setResult] = useState<User | null>(null);
     const [loading, setLoading] = useState(false);
     const theme = useTheme();
-    const savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
-    const currentUser = savedUser ? JSON.parse(savedUser) : null;
+    const currentUser = getCurrentUser();
     const navigate = useNavigate();
     const handleSearch = async () => {
         if (!searchTerm.trim()) return;
@@ -88,20 +92,35 @@ export function SearchUserModal({
                 </Box>
 
                 {/* Current User Card */}
-                <Box
-                    mb={2}
-                    p={2}
-                    border={`1px solid ${theme.palette.divider}`}
-                    borderRadius={2}
-                    bgcolor={theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "#f9fafb"}
-                >
-                    <Typography variant="subtitle2" color="text.secondary">
-                        Giriş Yapan Kullanıcı:
-                    </Typography>
-                    <Typography variant="body1" fontWeight={600}>
-                        {currentUser.username} (ID: {currentUser.id})
-                    </Typography>
-                </Box>
+                <Accordion elevation={1} sx={{ mb: 2 }}>
+                    <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        aria-controls="account-info-content"
+                        id="account-info-header"
+
+                    >
+                        <Typography variant="h6" fontWeight={600}
+                        >👤 Hesap Bilgileri</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Box
+                            p={2}
+                            border={`1px solid ${theme.palette.divider}`}
+                            borderRadius={2}
+                            bgcolor={theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "#f9fafb"}
+                        >
+                            <Typography variant="body1" color="text.secondary" gutterBottom>
+                                <strong>Kullanıcı Adı:</strong> {currentUser?.username}
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary" gutterBottom>
+                                <strong>Kullanıcı ID:</strong> {currentUser?.id}
+                            </Typography>
+                            <Typography variant="body1" color="text.secondary">
+                                <strong>Kullanıcı E-posta:</strong> {currentUser?.email}
+                            </Typography>
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
 
                 {/* Search Field */}
                 <TextField

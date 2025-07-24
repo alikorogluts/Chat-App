@@ -1,26 +1,26 @@
 import axios from "axios";
 import { apiConfig } from "../connection";
 
-type ResetPasswordRequest = {
+type resetPasswordRequest = {
     email: string;
     code: string;
 };
 
-type ResetPasswordResponse = {
+type resetPasswordResponse = {
     success: boolean;
     message: string;
 };
 
-const ResetPassword = async (
+const resetPassword = async (
     email: string,
     code: string
-): Promise<ResetPasswordResponse> => {
-    const requestBody: ResetPasswordRequest = {
+): Promise<resetPasswordResponse> => {
+    const requestBody: resetPasswordRequest = {
         email,
         code
     };
 
-    const response = await axios.post<ResetPasswordResponse>(
+    const response = await axios.put<resetPasswordResponse>(
         apiConfig.connectionString + "api/Account/ResetPassword",
         requestBody,
         {
@@ -34,4 +34,4 @@ const ResetPassword = async (
     return response.data;
 };
 
-export default ResetPassword;
+export default resetPassword;

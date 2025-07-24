@@ -35,7 +35,7 @@ const changePassword = async (
     };
 
     try {
-        const response = await axios.post<ChangePasswordResponse>(
+        const response = await axios.put<ChangePasswordResponse>(
             `${apiConfig.connectionString}api/Account/ChangePassword`,
             requestBody,
             {
@@ -49,14 +49,11 @@ const changePassword = async (
         return response.data;
     }
     catch (error: any) {
-        if (axios.isAxiosError(error) && error.response?.data) {
-            return error.response.data as ChangePasswordResponse;
+        // Axios hatasıysa response.data'yı döndür, değilse message
+        if (axios.isAxiosError(error)) {
+            return error.response?.data ?? { success: false, message: error.message };
         }
-
-        return {
-            success: false,
-            message: "Beklenmeyen bir hata oluştu.",
-        };
+        return { success: false, message: "Bilinmeyen bir hata oluştu." };
     }
 
 };
