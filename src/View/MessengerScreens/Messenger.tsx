@@ -28,18 +28,21 @@ import { sendMessageApi } from "../../services/sendMessageApi";
 import { useSignalR } from "../../signalR/chatSignalIR";
 import { fetchInbox } from "../../services/inBoxApi";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 import type { PaletteMode } from "@mui/material";
 import type { InboxItem } from "../../Models/ApiResponse";
 import { apiConfig } from "../../connection";
 import { AccountDialog } from "./inboxScreens/accountDialog/AccountDialog";
 import sendMail from "../../services/sendMail";
 import changePassword from "../../services/changePassword";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import ComputerIcon from '@mui/icons-material/Computer';
+
 
 interface MessengerProps {
-    user: { id: number; username: string };
-    onLogout: () => void;
+    onLogout: (setUser: React.Dispatch<React.SetStateAction<any>>, navigate: NavigateFunction) => void;
+    isAdmin: boolean
+
 }
 
 const getDesignTokens = (mode: PaletteMode) => ({
@@ -98,7 +101,7 @@ const getDesignTokens = (mode: PaletteMode) => ({
     },
 });
 
-export function Messenger({ onLogout }: MessengerProps) {
+export function Messenger({ onLogout, isAdmin }: MessengerProps) {
 
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [darkMode, setDarkMode] = useState<PaletteMode>("light");
@@ -120,7 +123,6 @@ export function Messenger({ onLogout }: MessengerProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
 
-
     const handlePasswordChange = async (newPassword: string, oldPassword: string) => {
         closeAccountDialog();
         const result = await changePassword(newPassword, oldPassword, navigate);
@@ -133,9 +135,9 @@ export function Messenger({ onLogout }: MessengerProps) {
 
     };
 
-    const handleSendEmail = async (subject: string, body: string) => {
+    const handleSendEmail = async (subject: string, body: string, file?: File) => {
         closeAccountDialog();
-        const result = await sendMail(subject, body, navigate);
+        const result = await sendMail(subject, body, navigate, file);
 
         if (result) {
             showResult(result);
@@ -155,13 +157,10 @@ export function Messenger({ onLogout }: MessengerProps) {
 
     const handleSecureLogout = () => {
         closeAccountDialog();
-        handleLogout();
+        onLogout(currentUser, navigate);
     };
 
-    const handleLogout = () => {
-        onLogout();
-        navigate("/login");
-    };
+
     const updateOrDeleteMessage = (messageId: number, newText?: string) => {
         console.log(localMessages);
         setLocalMessages((prev) =>
@@ -279,15 +278,16 @@ export function Messenger({ onLogout }: MessengerProps) {
     }, [messages]);
 
     useEffect(() => {
+
         if (selectedUser && currentUser?.id) {
-            fetchMessages(currentUser?.id, selectedUser.id);
+            fetchMessages(selectedUser.id);
         }
     }, [selectedUser, fetchMessages, (currentUser?.id)]);
 
     useEffect(() => {
         const loadInbox = async () => {
             if (!currentUser?.id) return;
-            const data = await fetchInbox(currentUser?.id, navigate);
+            const data = await fetchInbox(navigate);
             setInboxItems(data);
         };
         loadInbox();
@@ -327,8 +327,7 @@ export function Messenger({ onLogout }: MessengerProps) {
         try {
             const newMessage = await sendMessageApi(
                 content,
-                currentUser?.id,
-                selectedUser.id,
+                selectedUser?.id,
                 navigate,
                 file || undefined,
 
@@ -399,7 +398,9 @@ export function Messenger({ onLogout }: MessengerProps) {
 
 
     return (
+
         <ThemeProvider theme={theme}>
+
 
             <CssBaseline />
             <Box
@@ -414,39 +415,7 @@ export function Messenger({ onLogout }: MessengerProps) {
                     },
                 }}
             >
-                <Toaster
-                    position="top-right"
-                    gutter={12} // toasts arası boşluk
-                    containerStyle={{
-                        top: 20,
-                        right: 20,
-                        left: 20,
-                        maxWidth: "100vw",
-                        padding: "0 16px",
-                    }}
-                    toastOptions={{
-                        style: {
-                            fontSize: "clamp(16px, 2.5vw, 18px)", // mobilde büyür, desktopta dengeli
-                            padding: "clamp(12px, 3vw, 20px)",
-                            borderRadius: "8px",
-                            background: "#1f2937", // zinc-800 gibi koyu arka plan
-                            color: "#fff",
-                            boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-                        },
-                        success: {
-                            iconTheme: {
-                                primary: "#22c55e", // yeşil
-                                secondary: "#fff",
-                            },
-                        },
-                        error: {
-                            iconTheme: {
-                                primary: "#ef4444", // kırmızı
-                                secondary: "#fff",
-                            },
-                        },
-                    }}
-                />
+
                 {(isDesktop || isTablet || !selectedUser) && (
                     <Box
                         width={{ xs: "100%", sm: "40%", md: isTablet ? "35%" : "30%" }}
@@ -459,6 +428,8 @@ export function Messenger({ onLogout }: MessengerProps) {
                             borderRight: `1px solid ${theme.palette.divider}`,
                         }}
                     >
+
+
                         {/* HEADER */}
                         <AppBar
                             position="static"
@@ -475,6 +446,18 @@ export function Messenger({ onLogout }: MessengerProps) {
                                 <Typography variant="h6" fontWeight="700" sx={{ flexGrow: 1 }}>
                                     Mesajlar
                                 </Typography>
+
+                                {isAdmin && (
+                                    <IconButton
+                                        onClick={() => navigate("/adminpage")}
+                                        color="inherit"
+                                        size="large"
+                                        sx={{ mr: 1 }}
+                                    >
+                                        <ComputerIcon />
+                                    </IconButton>
+                                )}
+
 
 
 

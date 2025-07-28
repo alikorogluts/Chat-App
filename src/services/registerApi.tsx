@@ -1,5 +1,4 @@
-import axios from 'axios';
-import { apiConfig } from '../connection';
+import api from "../connection";
 
 export interface RegisterResponse {
     message: string;
@@ -16,20 +15,15 @@ export const registerApi = async (
     email: string,
     code: string
 ): Promise<RegisterResponse> => {
-    const response = await axios.post(
-        apiConfig.connectionString + 'api/Account/Register',
+    const response = await api.post(
+        'api/Account/Register',
         {
             password,
             userName,
             email,
             code
-        },
-        {
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "*/*"
-            }
         }
+
     );
 
     return response.data as RegisterResponse;

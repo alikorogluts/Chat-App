@@ -1,50 +1,41 @@
-import axios from "axios";
-import { apiConfig } from "../connection";
-import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
-import type { NavigateFunction } from "react-router-dom";
 
-type SendMailRequest = {
-    userId: number,
-    subject: string;
-    body: string;
-};
+import api from "../connection";
+import { getCurrentUser } from "../utils/getLocalUser";
+
+import type { NavigateFunction } from "react-router-dom";
+import { handleLogout } from "../utils/handleLogout";
+import axios from "axios";
+
+
 
 type SendMailResponse = {
     success: boolean;
     message: string;
 };
-
 const sendMail = async (
-
     subject: string,
     body: string,
-    navigate: NavigateFunction
+    navigate: NavigateFunction,
+    file?: File
 ): Promise<SendMailResponse | null> => {
     const user = getCurrentUser();
     if (!user) {
-        logout(navigate);
+        handleLogout(undefined, undefined, navigate);
         return null;
     }
-    const userId = user.id;
 
-    const requestBody: SendMailRequest = {
-        userId,
-        subject,
-        body,
-    };
+    const formData = new FormData();
+    formData.append("subject", subject);
+    formData.append("body", body);
+    if (file) {
+        formData.append("file", file);
+    }
 
     try {
-        const response = await axios.post<SendMailResponse>(
-            `${apiConfig.connectionString}api/Message/SendMail`,
-            requestBody,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "*/*",
-                    Authorization: `Bearer ${user.token}`,
-                },
-            }
+        const response = await api.post<SendMailResponse>(
+            `api/Message/SendMail`,
+            formData,
+
         );
         return response.data;
     } catch (error: any) {
@@ -59,4 +50,4 @@ const sendMail = async (
     }
 };
 
-export default sendMail;
+export default sendMail

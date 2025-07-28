@@ -1,7 +1,6 @@
-import axios from "axios";
-import { apiConfig } from "../connection";
+import api from "../connection";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
+import { handleLogout } from "../utils/handleLogout";
 import type { NavigateFunction } from "react-router-dom";
 
 interface Backgrounds {
@@ -13,18 +12,13 @@ const getBackgrounds = async (navigate: NavigateFunction): Promise<Backgrounds |
     const user = getCurrentUser();
 
     if (!user) {
-        logout(navigate);
+        handleLogout(undefined, undefined, navigate);
         return null;
     }
 
     try {
-        const response = await axios.get(apiConfig.connectionString + "api/Message/GetBackground", {
-            headers: {
-                "Content-Type": "application/json",
-                "Cache-Control": "no-cache",
-                Accept: "application/json",
-                Authorization: `Bearer ${user.token}`,
-            },
+        const response = await api.get("api/Message/GetBackground", {
+
         });
 
         const data = response.data;
@@ -36,7 +30,7 @@ const getBackgrounds = async (navigate: NavigateFunction): Promise<Backgrounds |
         };
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            logout(navigate);
+            handleLogout(undefined, undefined, navigate);
         }
         return null;
     }

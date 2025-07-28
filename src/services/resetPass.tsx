@@ -1,5 +1,4 @@
-import axios from "axios";
-import { apiConfig } from "../connection";
+import api from "../connection";
 
 type resetPasswordRequest = {
     email: string;
@@ -20,15 +19,10 @@ const resetPassword = async (
         code
     };
 
-    const response = await axios.put<resetPasswordResponse>(
-        apiConfig.connectionString + "api/Account/ResetPassword",
+    const response = await api.put<resetPasswordResponse>(
+        "api/Account/ResetPassword",
         requestBody,
-        {
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "*/*"
-            }
-        }
+
     );
 
     return response.data;

@@ -13,7 +13,7 @@ import _changeUserName from "./subAccountDialog/_userNameChange";
 interface AccountDialogProps {
     open: boolean;
     onClose: () => void;
-    onSendEmail: (subject: string, text: string) => void;
+    onSendEmail: (subject: string, text: string, file?: File) => void;
     onSecureLogout: () => void;
     onPasswordChange: (oldPass: string, newPass: string) => void;
 }

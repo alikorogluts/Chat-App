@@ -1,8 +1,8 @@
 import type { NavigateFunction } from "react-router-dom";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
 import axios from "axios";
-import { apiConfig } from "../connection";
+import api, { apiConfig } from "../connection";
+import { handleLogout } from "../utils/handleLogout";
 
 type updateMessageRequest = {
     messageId: number;
@@ -18,7 +18,7 @@ const updateMessage = async (_messageId: number, _messageContent: string, naviga
 
     const user = getCurrentUser();
     if (!user) {
-        logout(navigate);
+        handleLogout(undefined, undefined, navigate);
         return {
             success: false,
             message: "Oturum süreniz doldu. Lütfen tekrar giriş yapın."
@@ -30,16 +30,10 @@ const updateMessage = async (_messageId: number, _messageContent: string, naviga
     };
 
     try {
-        const response = await axios.put<updateMessageResponse>(
+        const response = await api.put<updateMessageResponse>(
             `${apiConfig.connectionString}api/Message/UpdateMessage`,
-            requestBody,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "*/*",
-                    Authorization: `Bearer ${user.token}`,
-                },
-            }
+            requestBody
+
 
         );
         return response.data

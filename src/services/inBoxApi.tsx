@@ -1,28 +1,22 @@
-import axios from "axios";
+
 import type { InboxItem } from "../Models/ApiResponse";
-import { apiConfig } from "../connection";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
+import { handleLogout } from "../utils/handleLogout";
 import type { NavigateFunction } from "react-router-dom";
+import api from "../connection";
 
 export const fetchInbox = async (
-    userId: number,
+
     navigate: NavigateFunction
 ): Promise<InboxItem[]> => {
     const user = getCurrentUser();
-    if (!user || !userId) {
-        logout(navigate);
+    if (!user) {
+        handleLogout(undefined, undefined, navigate);
         return [];
     }
 
     try {
-        const response = await axios.get(apiConfig.connectionString + `api/Message/GetInbox`, {
-            params: { receiverId: userId },
-            headers: {
-                Accept: "*/*",
-                Authorization: `Bearer ${user.token}`,
-            },
-        });
+        const response = await api.get(`api/Message/GetInbox`);
 
         return response.data.map((item: any) => ({
             senderId: item.contactId,
@@ -37,7 +31,7 @@ export const fetchInbox = async (
         }));
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            logout(navigate);
+            handleLogout(undefined, undefined, navigate);
         }
         return [];
     }

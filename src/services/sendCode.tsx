@@ -1,5 +1,6 @@
 import axios from "axios";
-import { apiConfig } from "../connection";
+import api from "../connection";
+
 
 type VerificationType = 0 | 1 | 2;
 
@@ -13,14 +14,10 @@ const sendCode = async (
     type: VerificationType
 ): Promise<SendCodeResponse> => {
     try {
-        const response = await axios.post(
-            apiConfig.connectionString + "api/Account/SendCode",
-            { email, type },
-            {
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            }
+        const response = await api.post(
+            "api/Account/SendCode",
+            { email, type }
+
         );
         return response.data as SendCodeResponse;
     } catch (error: any) {

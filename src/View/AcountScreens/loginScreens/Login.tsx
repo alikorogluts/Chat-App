@@ -11,7 +11,7 @@ import login from '../../../services/loginApi';
 import ForgetPassword from './ForgetPassword';
 
 interface Props {
-    onLogin: (user: { id: number; username: string; token: string }) => void;
+    onLogin: (user: { id: number; username: string; }) => void;
 }
 
 export default function Login({ onLogin }: Props) {
@@ -38,44 +38,45 @@ export default function Login({ onLogin }: Props) {
     };
 
     const handleLogin = async () => {
-        setErrorMessage('');
+        setErrorMessage("");
         if (!email.trim() || !password.trim()) {
-            setErrorMessage('Lütfen eposta ve şifre girin.');
+            setErrorMessage("Lütfen eposta ve şifre girin.");
             return;
         }
 
         try {
-            const result = await login({
-                email: email,
-                password: password
-            });
-
+            const result = await login({ email, password });
             const user = result.user;
 
-            if (!user || !user.id || !user.username || !user.token) {
-                throw new Error('Geçersiz kullanıcı verisi.');
+            if (!user || !user.id || !user.username) {
+                throw new Error("Geçersiz kullanıcı verisi.");
             }
 
+
+
+            // Kullanıcı bilgilerini sakla
             const safeUser = {
                 id: user.id,
                 username: user.username,
-                token: user.token,
-                email: user.email
+                email: user.email,
             };
 
             if (remember) {
-                localStorage.setItem('user', JSON.stringify(safeUser));
+                localStorage.setItem("user", JSON.stringify(safeUser));
             } else {
-                sessionStorage.setItem('user', JSON.stringify(safeUser));
-                localStorage.removeItem('user');
+                sessionStorage.setItem("user", JSON.stringify(safeUser));
+                localStorage.removeItem("user");
             }
 
             onLogin(safeUser);
-            setPassword('');
+            setPassword("");
         } catch (error) {
-            setErrorMessage('Giriş başarısız oldu — kullanıcı adı veya şifre yanlış olabilir.');
+            setErrorMessage(
+                "Giriş başarısız oldu — kullanıcı adı veya şifre yanlış olabilir."
+            );
         }
     };
+
 
     return (
         <Box

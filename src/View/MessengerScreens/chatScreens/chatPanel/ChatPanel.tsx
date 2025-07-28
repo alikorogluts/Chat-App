@@ -11,7 +11,7 @@ import SendIcon from "@mui/icons-material/Send";
 import AttachFileIcon from "@mui/icons-material/AttachFile";
 import CloseIcon from "@mui/icons-material/Close";
 
-import { ChatHeader } from "../ChatHeader";
+import { ChatHeader } from "../chatHeader/ChatHeader";
 import type { Message, User } from "../../../../Models/types";
 import getBackgrounds from "../../../../services/getBackgrounds";
 import { useNavigate } from "react-router-dom";

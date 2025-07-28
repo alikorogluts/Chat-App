@@ -1,11 +1,11 @@
 // src/types.ts
 export interface User {
-    token: string;
     id: number;
     username: string;
     isOnline: boolean;
     lastSeen?: string;
     email?: string;
+    role?: string;
 }
 
 // types.ts

@@ -1,37 +1,36 @@
 import type { NavigateFunction } from "react-router-dom";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
+import { handleLogout } from "../utils/handleLogout";
 import axios from "axios";
-import { apiConfig } from "../connection";
+import api from "../connection";
 
 type deleteMessageResponse = {
-    success: boolean
-    message: string
+    success: boolean;
+    message: string;
 };
 
 const deleteMessage = async (
     messageId: number,
     navigate: NavigateFunction
 ): Promise<deleteMessageResponse> => {
-
     const user = getCurrentUser();
     if (!user) {
-        logout(navigate);
+        handleLogout(undefined, undefined, navigate);
         return {
             success: false,
-            message: "Oturum süresi doldu. Lütfen tekrar giriş yapın."
-        }
+            message: "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
+        };
     }
+
     try {
-        const response = await axios.delete(apiConfig.connectionString + `api/Message/DeleteMessage`, {
+        const response = await api.delete<deleteMessageResponse>(`api/Message/DeleteMessage`, {
             params: { messageId },
-            headers: {
-                Authorization: `Bearer ${user.token}`,
-            },
+            // Eğer token header ile auth gerekiyorsa, şu satırı açabilirsin:
+            // headers: { Authorization: `Bearer ${user.token}` }
         });
+
         return response.data;
-    }
-    catch (error: any) {
+    } catch (error: any) {
         if (axios.isAxiosError(error)) {
             return error.response?.data ?? {
                 success: false,
@@ -43,8 +42,6 @@ const deleteMessage = async (
             message: "Bilinmeyen bir hata oluştu",
         };
     }
-
-
 };
 
 export default deleteMessage;

@@ -1,9 +1,8 @@
 import { useState, useCallback } from "react";
-import axios from "axios";
 import type { Message } from "../Models/types";
-import { apiConfig } from "../connection";
+import api, { apiConfig } from "../connection";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
+import { handleLogout } from "../utils/handleLogout";
 import type { NavigateFunction } from "react-router-dom";
 
 export interface MessageItem {
@@ -23,21 +22,19 @@ export function getMessages(navigate: NavigateFunction) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const fetchMessages = useCallback(async (senderId: number, receiverId: number) => {
+    const fetchMessages = useCallback(async (senderId: number) => {
         const user = getCurrentUser();
 
         if (!user) {
-            logout(navigate);
+            handleLogout(undefined, undefined, navigate);
             return;
         }
 
         setIsLoading(true);
         try {
-            const response = await axios.get(apiConfig.connectionString + `api/Message/GetMessage`, {
-                params: { senderId, receiverId },
-                headers: {
-                    Authorization: `Bearer ${user.token}`,
-                },
+            const response = await api.get(`api/Message/GetMessage`, {
+                params: { senderId }
+
             });
 
             const data = response.data as MessageItem[];
@@ -55,7 +52,7 @@ export function getMessages(navigate: NavigateFunction) {
             setMessages(converted);
         } catch (error: any) {
             if (error.response?.status === 401 || error.response?.status === 403) {
-                logout(navigate);
+                handleLogout(undefined, undefined, navigate);
             } else {
             }
         } finally {

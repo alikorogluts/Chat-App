@@ -185,44 +185,65 @@ function _emailChange({ setMode }: _emailChangeProps) {
     }
 
     return (
-        <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-md mx-auto">
+        <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="max-w-md mx-auto px-4"
+        >
+            {/* Geri Butonu ve Başlık */}
             <div className="mb-6">
                 <button
                     onClick={() => setMode("menu")}
-                    className="text-sm text-zinc-500 hover:text-zinc-800 flex items-center"
+                    className="text-sm text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white flex items-center"
                 >
                     <ArrowLeftIcon className="w-4 h-4 mr-1" /> Geri
                 </button>
-                <h2 className="text-xl font-bold text-zinc-800 mt-2">Yeni E-posta Girin</h2>
+                <h2 className="text-xl font-bold text-zinc-800 dark:text-white mt-2">
+                    Yeni E-posta Girin
+                </h2>
 
-                <div className="my-2 p-4 rounded-md border border-emerald-300 bg-emerald-50 shadow-sm">
-                    <h3 className="text-lg font-semibold text-emerald-800 mb-1">📧 Mevcut E-posta Hesabınız</h3>
-                    <p className="text-emerald-900 text-shadow-sm text-base font-medium">
+                {/* Mevcut E-posta Kutusu */}
+                <div className="my-3 p-4 rounded-md border border-emerald-400 bg-emerald-50 dark:bg-emerald-900/10 shadow-sm">
+                    <h3 className="text-lg font-semibold text-emerald-800 dark:text-emerald-300 mb-1">
+                        📧 Mevcut E-posta Hesabınız
+                    </h3>
+                    <p className="text-base font-medium text-emerald-900 dark:text-emerald-100">
                         {user.email}
                     </p>
                 </div>
             </div>
+
+            {/* Form Alanları */}
             <div className="space-y-4">
+                {/* Yeni E-posta */}
                 <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">Yeni E-posta</label>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+                        Yeni E-posta
+                    </label>
                     <input
                         type="email"
                         value={newEmail}
                         onChange={(e) => setNewEmail(e.target.value)}
-                        className="w-full p-3 rounded-lg border border-zinc-300 bg-zinc-50 text-zinc-800 focus:ring-2 focus:ring-green-500"
+                        className="w-full p-3 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-white focus:ring-2 focus:ring-green-500"
                         placeholder="example@site.com"
                     />
                 </div>
+
+                {/* Şifre */}
                 <div>
-                    <label className="block text-sm font-medium text-zinc-700 mb-1">Şifreniz</label>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-200 mb-1">
+                        Şifreniz
+                    </label>
                     <input
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full p-3 rounded-lg border border-zinc-300 bg-zinc-50 text-zinc-800 focus:ring-2 focus:ring-green-500"
+                        className="w-full p-3 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-white focus:ring-2 focus:ring-green-500"
                         placeholder="Şifrenizi girin"
                     />
                 </div>
+
+                {/* Gönder Butonu */}
                 <Button
                     fullWidth
                     variant="contained"
@@ -240,7 +261,11 @@ function _emailChange({ setMode }: _emailChangeProps) {
                         },
                     }}
                 >
-                    {isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Kodu Gönder"}
+                    {isSubmitting ? (
+                        <CircularProgress size={24} color="inherit" />
+                    ) : (
+                        "Kodu Gönder"
+                    )}
                 </Button>
             </div>
         </motion.div>

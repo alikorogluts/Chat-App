@@ -1,11 +1,10 @@
 import axios from "axios";
-import { apiConfig } from "../connection";
+import api from "../connection";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
+import { handleLogout } from "../utils/handleLogout";
 import type { NavigateFunction } from "react-router-dom";
 
 type ChangeEmailRequest = {
-    userId: number;
     password: string;
     newEmail: string;
     code: string;
@@ -24,7 +23,7 @@ const changeEmail = async (
 ): Promise<ChangeEmailResponse> => {
     const user = getCurrentUser();
     if (!user) {
-        logout(navigate);
+        handleLogout(undefined, undefined, navigate);
         return {
             success: false,
             message: "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
@@ -32,23 +31,16 @@ const changeEmail = async (
     }
 
     const requestBody: ChangeEmailRequest = {
-        userId: user.id,
         password,
         newEmail,
         code,
     };
 
     try {
-        const response = await axios.put<ChangeEmailResponse>(
-            `${apiConfig.connectionString}api/Account/ChangeEmail`,
+        const response = await api.put<ChangeEmailResponse>(
+            `$api/Account/ChangeEmail`,
             requestBody,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "*/*",
-                    Authorization: `Bearer ${user.token}`,
-                },
-            }
+
         );
         return response.data;
     } catch (error: any) {

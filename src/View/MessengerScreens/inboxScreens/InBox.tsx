@@ -171,7 +171,7 @@ export const UserList = ({
                         <ListItemButton
                             key={u.senderId}
                             onClick={() => {
-                                onSelectUser({ id: u.senderId, username: u.senderUsername, isOnline: u.senderOnline, token: '' });
+                                onSelectUser({ id: u.senderId, username: u.senderUsername, isOnline: u.senderOnline });
                                 onClearUnread(u.senderId);
                             }}
                             selected={selectedUser?.id === u.senderId}

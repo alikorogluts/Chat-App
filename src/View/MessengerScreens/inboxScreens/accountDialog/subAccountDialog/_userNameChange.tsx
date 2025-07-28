@@ -61,35 +61,35 @@ function _changeUserName({ setMode, onClose }: _changeUserNameProps) {
             <div className="flex items-center mb-5">
                 <button
                     onClick={() => setMode("menu")}
-                    className="flex items-center text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 mr-2"
+                    className="flex items-center text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-white mr-2 transition-colors"
                 >
                     <ArrowLeftIcon className="w-5 h-5 mr-1" />
                     Geri
                 </button>
-                <h3 className="text-xl font-bold text-zinc-800 dark:text-zinc-200">
+                <h3 className="text-xl font-bold text-zinc-800 dark:text-zinc-100">
                     Kullanıcı Adı Değiştir
                 </h3>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-2">
-                    <div className="my-2 p-4 rounded-md border border-green-300 bg-green-50 shadow-sm">
-                        <h3 className="text-lg font-semibold text-green-800 mb-1">👤 Mevcut Kullanıcı Adınız</h3>
-                        <p className="text-green-900 text-shadow-sm text-base font-medium">
+                    <div className="my-2 p-4 rounded-md border border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-700 shadow-sm">
+                        <h3 className="text-lg font-semibold text-green-800 dark:text-green-300 mb-1">👤 Mevcut Kullanıcı Adınız</h3>
+                        <p className="text-green-900 dark:text-green-100 text-base font-medium">
                             {user?.username}
                         </p>
                     </div>
 
-
-
                     <br />
-
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                        Kullanıcı Adı
+                    </label>
                     <input
                         type="text"
                         placeholder="Yeni kullanıcı adınızı girin"
                         value={newUserName}
                         onChange={(e) => setNewUserName(e.target.value)}
-                        className="w-full p-3 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        className="w-full p-3 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                 </div>
 
@@ -102,12 +102,12 @@ function _changeUserName({ setMode, onClose }: _changeUserNameProps) {
                         placeholder="Şifrenizi girin"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="w-full p-3 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                        className="w-full p-3 rounded-lg border border-zinc-300 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                     />
                 </div>
 
                 {errorMessage && (
-                    <div className="md:col-span-2 text-red-500 text-sm py-2 px-3 bg-red-50 dark:bg-red-900/30 rounded-lg">
+                    <div className="md:col-span-2 text-red-600 dark:text-red-400 text-sm py-2 px-3 bg-red-50 dark:bg-red-900/30 rounded-lg">
                         {errorMessage}
                     </div>
                 )}
@@ -126,6 +126,7 @@ function _changeUserName({ setMode, onClose }: _changeUserNameProps) {
                 </div>
             </div>
         </motion.div>
+
     );
 }
 

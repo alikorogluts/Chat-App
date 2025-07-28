@@ -7,7 +7,7 @@ type ModeType = "menu" | "email" | "password" | "logout" | "changeUserName" | "e
 
 interface _sendSuppertRequestProps {
     setMode: (mode: ModeType) => void;
-    onSendEmail: (emailSubject: string, emailText: string) => void;
+    onSendEmail: (emailSubject: string, emailText: string, file?: File) => void;
     onClose: () => void;
 }
 
@@ -17,6 +17,48 @@ function _sendSuppertRequest({ setMode, onSendEmail, onClose }: _sendSuppertRequ
     const [emailText, setEmailText] = useState("");
     const [emailSubject, setEmailSubject] = useState("");
     const [isDisabled, setIsDisabled] = useState(true);
+    // State'lere şunları ekleyin:
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+    // Görsel yükleme fonksiyonu
+    const MAX_FILE_SIZE_MB = 10;
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const validImageTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'image/gif'];
+
+        // 🔍 Dosya tipi kontrolü
+        if (!validImageTypes.includes(file.type)) {
+            alert("Lütfen sadece resim dosyası seçiniz (jpg, png, webp, gif).");
+            return;
+        }
+
+        // 📏 Boyut kontrolü (MB cinsinden)
+        const fileSizeMB = file.size / (1024 * 1024);
+        if (fileSizeMB > MAX_FILE_SIZE_MB) {
+            alert(`Resim dosyası ${MAX_FILE_SIZE_MB} MB'tan büyük olamaz.`);
+            return;
+        }
+
+        // ✅ Uygunsa yükle
+        setImageFile(file);
+        setImagePreview(URL.createObjectURL(file));
+    };
+
+
+    // Görsel kaldırma
+    const handleImageRemove = () => {
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        setImageFile(null);
+        setImagePreview(null);
+    };
+
+
 
 
     const handleSendEmail = () => {
@@ -28,7 +70,7 @@ function _sendSuppertRequest({ setMode, onSendEmail, onClose }: _sendSuppertRequ
             toast.error("Lütfen bir mesaj yazın");
             return;
         }
-        onSendEmail(emailSubject, emailText);
+        onSendEmail(emailSubject, emailText, imageFile ?? undefined);
         onClose();
     };
     useEffect(() => {
@@ -159,6 +201,45 @@ function _sendSuppertRequest({ setMode, onSendEmail, onClose }: _sendSuppertRequ
 
                 </div>
 
+                <div>
+                    <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
+                        Destekleyici Görsel (isteğe bağlı)
+                    </label>
+
+                    <div className="flex items-center gap-4">
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            className="block text-sm text-gray-500
+                       file:mr-4 file:py-2 file:px-4
+                       file:rounded-lg file:border-0
+                       file:text-sm file:font-semibold
+                       file:bg-blue-50 dark:file:bg-zinc-800
+                       file:text-blue-700 dark:file:text-zinc-200
+                       hover:file:bg-blue-100 dark:hover:file:bg-zinc-700"
+                        />
+                        {imagePreview && (
+                            <div className="relative">
+                                <img
+                                    src={imagePreview}
+                                    alt="Önizleme"
+                                    className="w-20 h-20 object-cover rounded-lg shadow-md border border-zinc-300 dark:border-zinc-600"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleImageRemove}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center shadow-lg hover:bg-red-600"
+                                    title="Kaldır"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+
 
 
 
@@ -182,6 +263,7 @@ function _sendSuppertRequest({ setMode, onSendEmail, onClose }: _sendSuppertRequ
                         </svg>
                         Gönder
                     </button>
+
                 </div>
             </div>
         </motion.div>

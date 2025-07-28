@@ -104,6 +104,8 @@ function messages({ messages, backgroundImage, updateOrDeleteMessage }: messages
             }}
         >
             {messages.map((msg, index, arr) => {
+
+
                 const isMine = msg.senderId === currentUser?.id;
                 const showDate =
                     index === 0 ||

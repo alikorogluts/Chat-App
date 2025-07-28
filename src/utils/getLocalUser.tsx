@@ -1,5 +1,6 @@
-import { isTokenExpired } from "./isTokenExpired";
 import type { User } from "../Models/types";
+
+
 
 export const getCurrentUser = (): User | null => {
     try {
@@ -10,13 +11,12 @@ export const getCurrentUser = (): User | null => {
 
         const user = JSON.parse(storedUser);
 
+        // Token geçerli mi ve ID eşleşiyor mu?
         if (
-            user &&
+
             user.id &&
             user.username &&
-            user.token &&
-            user.email &&
-            !isTokenExpired(user.token)
+            user.email
         ) {
             return user;
         }

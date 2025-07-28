@@ -5,8 +5,8 @@ import type { InboxItem } from "../Models/ApiResponse";
 import { apiConfig } from "../connection";
 import type { NavigateFunction } from "react-router-dom";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
 import playNotificationSound from "../utils/playNotificationSound";
+import { handleLogout } from "../utils/handleLogout";
 
 export const useSignalR = (
     userId: string,
@@ -20,7 +20,7 @@ export const useSignalR = (
 
     const user = getCurrentUser();
     if (!user) {
-        logout(navigate);
+        handleLogout(undefined, undefined, navigate);
         return null;
     }
 
@@ -28,11 +28,13 @@ export const useSignalR = (
         if (!userId) return;
 
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl(apiConfig.connectionString + `chatHub?userId=${userId}`, {
-                accessTokenFactory: () => user.token,
+            .withUrl(apiConfig.connectionString + "chatHub", {
+                withCredentials: true // Cookie’lerin gönderilmesi için
+                // accessTokenFactory yok çünkü token cookie’de
             })
             .withAutomaticReconnect()
             .build();
+
 
         connection.on("ReceiveMessage", (message: Message) => {
             playNotificationSound("coming");

@@ -1,37 +1,24 @@
-import axios from "axios";
-import { apiConfig } from "../connection";
+import api from "../connection";
 import type { User } from "../Models/types";
 import type { NavigateFunction } from "react-router-dom";
-import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
+import { handleLogout } from "../utils/handleLogout";
 
 interface ApiUserResponse {
     userId: number;
     username: string;
     isOnline: boolean;
+    email?: string;
+    role?: string;
 }
 
 const getUser = async (
     searchingId: string,
     navigate: NavigateFunction
 ): Promise<User | null> => {
-    const user = getCurrentUser();
-
-    if (!user) {
-        logout(navigate);
-        return null;
-    }
-
     try {
-        const response = await axios.get<ApiUserResponse>(
-            apiConfig.connectionString + "api/Account/GetUser",
-            {
-                params: { userId: searchingId },
-                headers: {
-                    Authorization: `Bearer ${user.token}`,
-                },
-            }
-        );
+        const response = await api.get<ApiUserResponse>('api/Account/GetUser', {
+            params: { searchingId },
+        });
 
         const data = response.data;
 
@@ -39,11 +26,11 @@ const getUser = async (
             id: data.userId,
             username: data.username,
             isOnline: data.isOnline ?? false,
-            token: user.token
+            email: data.email ?? '',
         };
     } catch (error: any) {
         if (error.response?.status === 401 || error.response?.status === 403) {
-            logout(navigate);
+            handleLogout(undefined, undefined, navigate);
         }
         return null;
     }

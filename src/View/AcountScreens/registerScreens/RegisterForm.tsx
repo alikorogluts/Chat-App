@@ -98,14 +98,13 @@ export function RegisterForm({ onError, setShowConfetti }: RegisterFormProps) {
             const hasUppercase = /[A-Z]/.test(password);
             const hasLowercase = /[a-z]/.test(password);
             const hasDigit = /[0-9]/.test(password);
-            const hasSpecialChar = /[@$!%*?&]/.test(password);
 
             return (
                 password.length >= minLength &&
                 hasUppercase &&
                 hasLowercase &&
-                hasDigit &&
-                hasSpecialChar
+                hasDigit
+
             );
         };
 

@@ -1,11 +1,10 @@
 import axios from "axios";
-import { apiConfig } from "../connection";
+import api from "../connection";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
+import { handleLogout } from "../utils/handleLogout";
 import type { NavigateFunction } from "react-router-dom";
 
 type ChangeUserNameRequest = {
-    userId: number;
     newUserName: string;
     password: string;
 };
@@ -22,7 +21,7 @@ const changeUserName = async (
 ): Promise<ChangeUserNameResponse> => {
     const user = getCurrentUser();
     if (!user) {
-        logout(navigate);
+        handleLogout(undefined, undefined, navigate);
         return {
             success: false,
             message: "Oturum süresi doldu. Lütfen tekrar giriş yapın.",
@@ -30,22 +29,15 @@ const changeUserName = async (
     }
 
     const requestBody: ChangeUserNameRequest = {
-        userId: user.id,
         password,
         newUserName,
     };
 
     try {
-        const response = await axios.put<ChangeUserNameResponse>(
-            `${apiConfig.connectionString}api/Account/ChangeUserName`,
+        const response = await api.put<ChangeUserNameResponse>(
+            `api/Account/ChangeUserName`,
             requestBody,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "*/*",
-                    Authorization: `Bearer ${user.token}`,
-                },
-            }
+
         );
         return response.data;
     } catch (error: any) {

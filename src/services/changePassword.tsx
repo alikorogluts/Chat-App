@@ -1,11 +1,10 @@
 import axios from "axios";
-import { apiConfig } from "../connection";
+import api from "../connection";
 import { getCurrentUser } from "../utils/getLocalUser";
-import { logout } from "../utils/logout";
+import { handleLogout } from "../utils/handleLogout";
 import type { NavigateFunction } from "react-router-dom";
 
 type ChangePasswordRequest = {
-    userId: number,
     oldPassword: string;
     newPassword: string;
 };
@@ -23,28 +22,20 @@ const changePassword = async (
 ): Promise<ChangePasswordResponse | null> => {
     const user = getCurrentUser();
     if (!user) {
-        logout(navigate);
+        handleLogout(undefined, undefined, navigate);
         return null;
     }
-    const userId = user.id;
 
     const requestBody: ChangePasswordRequest = {
-        userId,
         oldPassword,
         newPassword,
     };
 
     try {
-        const response = await axios.put<ChangePasswordResponse>(
-            `${apiConfig.connectionString}api/Account/ChangePassword`,
+        const response = await api.put<ChangePasswordResponse>(
+            `api/Account/ChangePassword`,
             requestBody,
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    Accept: "*/*",
-                    Authorization: `Bearer ${user.token}`,
-                },
-            }
+
         );
         return response.data;
     }
