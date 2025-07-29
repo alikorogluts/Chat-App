@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
+import { TrashIcon, EyeIcon, CalendarIcon, UserIcon } from '@heroicons/react/24/outline';
 import getComplaints from '../service/complaints/getComplaints';
 import type { Complaint } from '../type/ComplaintsTypes';
 import { complaintStatusText } from '../type/ComplaintsTypes';
@@ -163,77 +163,169 @@ const Complaints: React.FC = () => {
             )}
 
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı ID</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Başlık</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksiyonlar</th>
-                        </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                        {loading ? (
-                            [...Array(5)].map((_, i) => (
-                                <tr key={i} className="animate-pulse">
-                                    {Array.from({ length: 6 }).map((__, j) => (
-                                        <td key={j} className="px-6 py-4">
-                                            <div className="h-4 bg-gray-200 rounded w-full max-w-xs"></div>
+                <div className="hidden md:block">
+                    {/* Masaüstü Tablo Görünümü */}
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kullanıcı</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Başlık</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Durum</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarih</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksiyonlar</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {loading ? (
+                                [...Array(5)].map((_, i) => (
+                                    <tr key={i}>
+                                        {Array.from({ length: 6 }).map((__, j) => (
+                                            <td key={j} className="px-6 py-4">
+                                                <div className="h-4 bg-gray-200 rounded w-full max-w-xs"></div>
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))
+                            ) : (
+                                complaints.map((complaint) => (
+                                    <tr
+                                        key={complaint.id}
+                                        className="hover:bg-gray-50 cursor-pointer"
+                                        onClick={() => handleRowClick(complaint)}
+                                    >
+                                        <td className="px-6 py-4 text-sm text-gray-500">{complaint.id}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+
+                                            <span className="text-gray-600 text-xs">{complaint.userId}</span>
+
+
                                         </td>
-                                    ))}
-                                </tr>
-                            ))
-                        ) : (
-                            complaints.map(complaint => (
-                                <tr
-                                    key={complaint.id}
-                                    className="hover:bg-gray-50 cursor-pointer"
-                                    onClick={() => handleRowClick(complaint)}
-                                >
-                                    <td className="px-6 py-4 text-sm text-gray-500">{complaint.id}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-900">{complaint.userId}</td>
-                                    <td className="px-6 py-4 text-sm text-gray-900">{complaint.title}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 inline-flex text-xs font-semibold rounded-full 
-                                            ${complaint.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                                                complaint.status === 'Resolved' ? 'bg-green-100 text-green-800' :
-                                                    'bg-blue-100 text-blue-800'}`}
-                                        >
-                                            {complaintStatusText[complaint.status]}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-gray-500">
-                                        {new Date(complaint.date).toLocaleDateString('tr-TR')}
-                                    </td>
-                                    <td className="px-6 py-4 text-sm font-medium">
-                                        <div className="flex space-x-2">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRowClick(complaint);
-                                                }}
-                                                className="text-blue-600 hover:text-blue-900"
+                                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">{complaint.title}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                  ${complaint.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                                    complaint.status === 'Resolved' ? 'bg-green-100 text-green-800' :
+                                                        'bg-blue-100 text-blue-800'}`}
                                             >
-                                                <EyeIcon className="h-5 w-5" />
-                                            </button>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDelete(complaint.id);
-                                                }}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                <TrashIcon className="h-5 w-5" />
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                                                {complaintStatusText[complaint.status]}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                            <div className="flex items-center">
+                                                <CalendarIcon className="h-4 w-4 mr-1 text-gray-400" />
+                                                {new Date(complaint.date).toLocaleDateString('tr-TR')}
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm font-medium">
+                                            <div className="flex space-x-3">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleRowClick(complaint);
+                                                    }}
+                                                    className="text-blue-600 hover:text-blue-900 transition-colors"
+                                                    title="Detayları Gör"
+                                                >
+                                                    <EyeIcon className="h-5 w-5" />
+                                                </button>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDelete(complaint.id);
+                                                    }}
+                                                    className="text-red-600 hover:text-red-900 transition-colors"
+                                                    title="Sil"
+                                                >
+                                                    <TrashIcon className="h-5 w-5" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Mobil Kart Görünümü */}
+                <div className="md:hidden space-y-3 p-4">
+                    {loading ? (
+                        [...Array(3)].map((_, i) => (
+                            <div key={i} className="animate-pulse bg-gray-100 rounded-lg p-4 space-y-3">
+                                <div className="h-5 bg-gray-200 rounded w-3/4"></div>
+                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                <div className="flex justify-end space-x-2 pt-2">
+                                    <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+                                    <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        complaints.map((complaint) => (
+                            <div
+                                key={complaint.id}
+                                className="border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                                onClick={() => handleRowClick(complaint)}
+                            >
+                                <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-gray-800">{complaint.title}</h3>
+                                        <p className="text-sm text-gray-500 mt-1">ID: {complaint.id}</p>
+                                    </div>
+                                    <span className={`px-2 py-1 text-xs font-semibold rounded-full 
+              ${complaint.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                                            complaint.status === 'Resolved' ? 'bg-green-100 text-green-800' :
+                                                'bg-blue-100 text-blue-800'}`}
+                                    >
+                                        {complaintStatusText[complaint.status]}
+                                    </span>
+                                </div>
+
+                                <div className="mt-3 space-y-2">
+                                    <div className="flex items-center text-sm text-gray-600">
+                                        <UserIcon className="h-4 w-4 mr-2 text-gray-400" />
+                                        <span>Kullanıcı ID: {complaint.userId}</span>
+                                    </div>
+
+                                    <div className="flex items-center text-sm text-gray-600">
+                                        <CalendarIcon className="h-4 w-4 mr-2 text-gray-400" />
+                                        <span>{new Date(complaint.date).toLocaleDateString('tr-TR', {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            weekday: 'short'
+                                        })}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end space-x-3 mt-4">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRowClick(complaint);
+                                        }}
+                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                                        title="Detayları Gör"
+                                    >
+                                        <EyeIcon className="h-5 w-5" />
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDelete(complaint.id);
+                                        }}
+                                        className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                        title="Sil"
+                                    >
+                                        <TrashIcon className="h-5 w-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
         </div>
     );

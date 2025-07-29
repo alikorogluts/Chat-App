@@ -87,11 +87,11 @@ const LogsPage: React.FC = () => {
     ];
 
     const logTypes = [
-        { id: 'all', label: 'Tümü' },
-        { id: 'error', label: 'Hatalar' },
-        { id: 'warning', label: 'Uyarılar' },
-        { id: 'ınformation', label: 'Bilgilendirme' },
-        { id: 'debug', label: 'Debug' },
+        { id: 'all', label: 'Tümü', color: 'bg-green-100 text-green-8002' },
+        { id: 'error', label: 'Hatalar', color: 'bg-red-100 text-red-800' },
+        { id: 'warning', label: 'Uyarılar', color: 'bg-yellow-100 text-yellow-800' },
+        { id: 'ınformation', label: 'Bilgilendirme', color: 'bg-blue-100 text-blue-800' },
+        { id: 'debug', label: 'Debug', color: 'bg-purple-100 text-purple-800' },
     ];
 
     const filteredLogs = logsData.filter(log => {
@@ -194,7 +194,7 @@ const LogsPage: React.FC = () => {
                                         setCurrentPage(1); // Filtre değiştiğinde ilk sayfaya dön
                                     }}
                                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedType === type.id
-                                        ? "bg-indigo-600 text-white shadow-md transform -translate-y-0.5"
+                                        ? type.color + "shadow-md transform -translate-y-0.5"
                                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                                         }`}
                                 >
@@ -233,7 +233,8 @@ const LogsPage: React.FC = () => {
 
                 {/* Log Tablosu */}
                 <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                    <div className="overflow-x-auto">
+
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
@@ -338,6 +339,110 @@ const LogsPage: React.FC = () => {
                                 }
                             </tbody>
                         </table>
+
+                    </div>
+                    <div className="md:hidden">
+                        {loading ? (
+                            // Mobil için loading durumu
+                            Array.from({ length: 3 }).map((_, idx) => (
+                                <div key={idx} className="border-b border-gray-200 p-4 animate-pulse">
+                                    <div className="flex justify-between">
+                                        <div className="space-y-2">
+                                            <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                            <div className="h-3 bg-gray-200 rounded w-16"></div>
+                                        </div>
+                                        <div className="h-6 bg-gray-200 rounded w-16"></div>
+                                    </div>
+                                    <div className="mt-4 space-y-3">
+                                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                        <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+                                    </div>
+                                    <div className="mt-4 h-8 bg-gray-200 rounded w-20 ml-auto"></div>
+                                </div>
+                            ))
+                        ) : currentLogs.length > 0 ? (
+                            // Mobil kartlar
+                            currentLogs.map((log) => (
+                                <div
+                                    key={log.id}
+                                    className="border-b border-gray-200 p-4 hover:bg-gray-50 cursor-pointer transition-colors"
+                                    onClick={() => setSelectedLog(log)}
+                                >
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {dayjs(log.timestamp).format('DD MMM YYYY')}
+                                            </div>
+                                            <div className="text-xs text-gray-500">
+                                                {dayjs(log.timestamp).format('HH:mm:ss')}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <span
+                                                className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getLogTypeColor(
+                                                    log.type
+                                                )}`}
+                                            >
+                                                {log.type === "error"
+                                                    ? "Hata"
+                                                    : log.type === "warning"
+                                                        ? "Uyarı"
+                                                        : log.type === "ınformation"
+                                                            ? "Bilgi"
+                                                            : "Debug"}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3">
+                                        <div className="flex items-center text-sm mb-1">
+                                            <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                            </svg>
+                                            <span className="font-medium text-gray-900">{log.user}</span>
+                                        </div>
+
+                                        <div className="flex items-start text-sm mb-1">
+                                            <svg className="w-4 h-4 text-gray-400 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                            </svg>
+                                            <div>
+                                                <div className="font-medium text-gray-900">{log.action}</div>
+                                                <div className="text-xs text-gray-500 mt-1">{log.details}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center text-sm text-gray-500 mt-2">
+                                            <svg className="w-4 h-4 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                            </svg>
+                                            <span className="font-mono">{log.ip}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-3 text-right">
+                                        <button
+                                            className="text-indigo-600 hover:text-indigo-900 font-medium px-3 py-1 rounded-md hover:bg-indigo-50 transition-colors"
+                                            onClick={() => setSelectedLog(log)}
+                                        >
+                                            Detay Görüntüle
+                                        </button>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            // Mobil için boş durum
+                            <div className="px-4 py-12 text-center">
+                                <div className="flex flex-col items-center justify-center">
+                                    <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <h3 className="text-lg font-medium text-gray-700 mb-1">Log bulunamadı</h3>
+                                    <p className="text-gray-500 text-sm">Seçtiğiniz filtrelerle eşleşen log kaydı bulunamadı.</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Sayfalama */}
